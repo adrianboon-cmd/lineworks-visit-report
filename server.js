@@ -222,33 +222,43 @@ async function createVisit(formData) {
     只傳統一編號，讓 Kintone Lookup
     自動帶出客戶名稱與電話。
   */
+async function createVisit(formData) {
 
   return await callKintone({
     appId: VISIT_APP_ID,
     token: VISIT_TOKEN,
     method: "POST",
     apiPath: "/k/v1/record.json",
+
     body: {
       app: VISIT_APP_ID,
+
       record: {
-        統一編號: {
+
+        統一編號輸入: {
           value: formData.統一編號
         },
+
         拜訪日期: {
           value: formData.拜訪日期
         },
+
         拜訪對象: {
           value: formData.拜訪對象
         },
+
         拜訪內容: {
           value: formData.拜訪內容
         },
+
         下一步: {
           value: formData.下一步
         }
+
       }
     }
   });
+
 }
 
 // ========================================
