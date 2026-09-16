@@ -220,7 +220,7 @@
       <h1>📝 拜訪紀錄回報</h1>
 
       <p class="subtitle">
-        輸入統一編號後，系統會先查詢客戶主檔。
+  輸入統一編號後，系統會自動查詢或建立客戶主檔，並同步建立拜訪紀錄。
       </p>
 
       <form id="visitForm">
@@ -366,21 +366,6 @@
             placeholder="例如：安排 Demo、提供報價或再次聯絡"
             required
           ></textarea>
-        </div>
-
-        <div class="field">
-          <label for="attachment">
-            附件
-          </label>
-
-          <input
-            type="file"
-            id="attachment"
-          >
-
-          <div class="status warning">
-            此版本尚未上傳附件至 Kintone。
-          </div>
         </div>
 
         <button
