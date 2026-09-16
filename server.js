@@ -199,6 +199,12 @@ async function createCustomer(formData) {
 
 }
 
+// ========================================
+// 新增拜訪紀錄 1350
+// ========================================
+
+async function createVisit(formData) {
+
   return await callKintone({
     appId: VISIT_APP_ID,
     token: VISIT_TOKEN,
@@ -235,7 +241,6 @@ async function createCustomer(formData) {
   });
 
 }
-
 // ========================================
 // HTTP Server
 // ========================================
