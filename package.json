@@ -6,3 +6,12 @@
     "start": "node server.js"
   }
 }
+{
+  "scripts": {
+    "start": "node server.js",
+    "token": "node get-token.js"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.2"
+  }
+}
