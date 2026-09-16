@@ -203,7 +203,7 @@ async function createCustomer(formData) {
 // 新增拜訪紀錄 1350
 // ========================================
 
-async function createVisit(formData, customer)
+async function createVisit(formData, customer) {
 
   return await callKintone({
     appId: VISIT_APP_ID,
@@ -214,35 +214,39 @@ async function createVisit(formData, customer)
     body: {
       app: VISIT_APP_ID,
 
-record: {
+      record: {
 
-  統一編號: {
-    value: formData.統一編號
-  },
+        統一編號: {
+          value: formData.統一編號
+        },
 
-  客戶名稱: {
-    value: customer.客戶名稱
-  },
+        客戶名稱: {
+          value: customer.客戶名稱
+        },
 
-  電話: {
-    value: customer.電話
-  },
+        電話: {
+          value: customer.電話
+        },
 
-  拜訪日期: {
-    value: formData.拜訪日期
-  },
+        拜訪日期: {
+          value: formData.拜訪日期
+        },
 
-  拜訪對象: {
-    value: formData.拜訪對象
-  },
+        拜訪對象: {
+          value: formData.拜訪對象
+        },
 
-  拜訪內容: {
-    value: formData.拜訪內容
-  },
+        拜訪內容: {
+          value: formData.拜訪內容
+        },
 
-  下一步: {
-    value: formData.下一步
-  }
+        下一步: {
+          value: formData.下一步
+        }
+
+      }
+    }
+  });
 
 }
 // ========================================
