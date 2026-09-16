@@ -389,44 +389,55 @@
   </div>
 
   <script>
- async function sendSuccessMessage(
+async function sendSuccessMessage(
   payload,
-  recordId
+  recordId,
+  customerCreated
 ) {
-
   if (!woffReady) {
-    return;
+    throw new Error(
+      "WOFF 尚未完成初始化，Kintone 已建立紀錄，但聊天室訊息未送出"
+    );
   }
 
-  try {
+  if (!woff.isInClient()) {
+    throw new Error(
+      "目前不是從 LINE WORKS App 內開啟，無法回傳聊天室訊息"
+    );
+  }
 
-    const message =
+  const customerStatus =
+    customerCreated
+      ? "新客戶主檔已同步建立"
+      : "使用既有客戶主檔";
+
+  const message =
 `✅ 拜訪紀錄已建立
 
 客戶：${payload.客戶名稱}
-
-統編：${payload.統一編號}
-
+統一編號：${payload.統一編號}
+電話：${payload.電話 || "未填寫"}
+拜訪日期：${payload.拜訪日期}
 拜訪對象：${payload.拜訪對象}
 
-日期：${payload.拜訪日期}
+拜訪內容：
+${payload.拜訪內容}
 
-Record ID：${recordId}`;
+下一步：
+${payload.下一步}
 
-    await woff.sendMessage({
-      content: {
-        type: "text",
-        text: message
-      }
-    });
+Kintone Record ID：${recordId}
+${customerStatus}`;
 
-  } catch (error) {
+  await woff.sendMessage({
+    content: message
+  });
 
-    console.error(
-      error
-    );
-  }
-}           
+  console.log(
+    "WOFF message sent:",
+    recordId
+  );
+}         
     const taxIdInput =
       document.getElementById("taxId");
 
@@ -472,22 +483,30 @@ Record ID：${recordId}`;
     let customerLookupState = "unknown";
 let woffReady = false;
 
+const WOFF_ID = "vakcc3AB99cWKnhF7K1Jrw";
+
 async function initWoff() {
-
   try {
+    if (typeof window.woff === "undefined") {
+      throw new Error("WOFF SDK 未成功載入");
+    }
 
-    await woff.init();
+    await woff.init({
+      woffId: WOFF_ID
+    });
 
     woffReady = true;
 
-    console.log(
-      "WOFF initialized"
-    );
+    console.log("WOFF initialized");
+    console.log("isInClient:", woff.isInClient());
 
   } catch (error) {
+    woffReady = false;
 
     console.error(
-      error
+      "WOFF initialization failed:",
+      error.code || "",
+      error.message || error
     );
   }
 }
