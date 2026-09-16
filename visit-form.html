@@ -212,7 +212,7 @@
     }
 </style>
 
-<script src="https://static.worksmobile.com/static/wm/woff/edge/3/sdk.js"></script>
+<script charset="utf-8" src="https://static.worksmobile.net/static/wm/woff/edge/3.7.1/sdk.js"></script>
 
 </head>
 
@@ -811,10 +811,11 @@ console.log("WOFF:", window.woff);
             );
           }
 
-          const customerMessage =
-            data.customerCreated
-              ? "新客戶主檔已同步建立"
-              : "使用既有客戶主檔";
+const customerMessage =
+  data.customerCreated
+    ? "新客戶主檔已同步建立"
+    : "使用既有客戶主檔";
+
 let chatMessageSent = false;
 let chatMessageError = "";
 
@@ -836,11 +837,8 @@ try {
     "WOFF sendMessage failed:",
     messageError
   );
-}          
-await sendSuccessMessage(
-  payload,
-  data.visitRecordId
-);
+}
+
 resultBox.innerHTML =
   "<strong>拜訪紀錄建立成功</strong>" +
   "<br>" +
@@ -856,7 +854,7 @@ resultBox.innerHTML =
         chatMessageError
   );
 
-          resultBox.classList.add("visible");
+resultBox.classList.add("visible");
 
           visitForm.reset();
 
