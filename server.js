@@ -169,50 +169,35 @@ async function findCustomer(taxId) {
 // ========================================
 // 新增客戶主檔 1349
 // ========================================
-console.log(
-  "建立拜訪紀錄統編:",
-  formData.統一編號
-);
-console.log(
-  "customer found:",
-  customer
-);
+
 async function createCustomer(formData) {
+
   return await callKintone({
     appId: CUSTOMER_APP_ID,
     token: CUSTOMER_TOKEN,
     method: "POST",
     apiPath: "/k/v1/record.json",
+
     body: {
       app: CUSTOMER_APP_ID,
-record: {
 
-  統一編號輸入: {
-    value: formData.統一編號
-  },
+      record: {
+        統一編號: {
+          value: formData.統一編號
+        },
 
-  拜訪日期: {
-    value: formData.拜訪日期
-  },
+        客戶名稱: {
+          value: formData.客戶名稱
+        },
 
-  拜訪對象: {
-    value: formData.拜訪對象
-  },
-
-  拜訪內容: {
-    value: formData.拜訪內容
-  },
-
-  下一步: {
-    value: formData.下一步
-  }
+        電話: {
+          value: formData.電話
+        }
+      }
+    }
+  });
 
 }
-
-// ========================================
-// 新增拜訪紀錄 1350
-// ========================================
-
 async function createVisit(formData) {
   /*
     重要：
