@@ -1,124 +1,739 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
-<meta charset="utf-8">
-<title>拜訪紀錄回報</title>
+  <meta charset="utf-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
 
-<style>
+  <title>拜訪紀錄回報</title>
 
-body{
-    font-family: Arial;
-    max-width:700px;
-    margin:auto;
-    padding:20px;
-}
+  <style>
+    * {
+      box-sizing: border-box;
+    }
 
-label{
-    display:block;
-    margin-top:15px;
-}
+    body {
+      margin: 0;
+      background: #f4f6f8;
+      color: #222;
+      font-family:
+        Arial,
+        "Noto Sans TC",
+        sans-serif;
+    }
 
-input, textarea{
-    width:100%;
-    padding:10px;
-    box-sizing:border-box;
-}
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 18px;
+    }
 
-button{
-    margin-top:20px;
-    padding:12px;
-    width:100%;
-}
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow:
+        0 4px 18px rgba(0, 0, 0, 0.08);
+    }
 
-</style>
+    h1 {
+      margin: 0 0 6px;
+      font-size: 24px;
+    }
 
+    .subtitle {
+      margin: 0 0 22px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .field {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      font-weight: 700;
+    }
+
+    .required {
+      color: #d93025;
+    }
+
+    input,
+    textarea,
+    button {
+      width: 100%;
+      font: inherit;
+    }
+
+    input,
+    textarea {
+      border: 1px solid #c8cdd3;
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #1f6feb;
+      box-shadow:
+        0 0 0 3px rgba(31, 111, 235, 0.12);
+    }
+
+    input[readonly] {
+      background: #f0f2f4;
+      color: #555;
+    }
+
+    textarea {
+      min-height: 105px;
+      resize: vertical;
+    }
+
+    .tax-row {
+      display: grid;
+      grid-template-columns: 1fr 110px;
+      gap: 10px;
+    }
+
+    .lookup-button {
+      margin: 0;
+      border: 1px solid #1f6feb;
+      border-radius: 8px;
+      background: #fff;
+      color: #1f6feb;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .lookup-button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .status {
+      display: none;
+      margin-top: 9px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .status.success {
+      display: block;
+      color: #116329;
+      background: #dafbe1;
+    }
+
+    .status.warning {
+      display: block;
+      color: #7a4e00;
+      background: #fff4ce;
+    }
+
+    .status.error {
+      display: block;
+      color: #a40e26;
+      background: #ffebe9;
+    }
+
+    .new-customer-box {
+      display: none;
+      margin-bottom: 18px;
+      padding: 14px;
+      border: 1px solid #f0c36d;
+      border-radius: 10px;
+      background: #fffaf0;
+    }
+
+    .new-customer-box.visible {
+      display: block;
+    }
+
+    .new-customer-title {
+      margin-bottom: 12px;
+      color: #7a4e00;
+      font-weight: 700;
+    }
+
+    .submit-button {
+      margin-top: 6px;
+      padding: 14px;
+      border: 0;
+      border-radius: 9px;
+      background: #1769e0;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .submit-button:disabled {
+      background: #9ba6b2;
+      cursor: not-allowed;
+    }
+
+    .result {
+      display: none;
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 10px;
+      background: #dafbe1;
+      color: #116329;
+      line-height: 1.7;
+    }
+
+    .result.visible {
+      display: block;
+    }
+
+    @media (max-width: 480px) {
+      .tax-row {
+        grid-template-columns: 1fr;
+      }
+
+      .lookup-button {
+        padding: 12px;
+      }
+
+      .container {
+        padding: 12px;
+      }
+
+      .card {
+        padding: 17px;
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <div class="container">
+    <div class="card">
 
-<h2>📝 拜訪紀錄回報</h2>
+      <h1>📝 拜訪紀錄回報</h1>
 
-<label>統一編號</label>
-<input id="taxId">
+      <p class="subtitle">
+        輸入統一編號後，系統會先查詢客戶主檔。
+      </p>
 
-<label>客戶名稱</label>
-<input id="customerName" readonly>
+      <form id="visitForm">
 
-<label>電話</label>
-<input id="phone" readonly>
+        <div class="field">
+          <label for="taxId">
+            統一編號
+            <span class="required">*</span>
+          </label>
 
-<label>拜訪日期</label>
-<input type="date" id="visitDate">
+          <div class="tax-row">
+            <input
+              id="taxId"
+              name="taxId"
+              inputmode="numeric"
+              autocomplete="off"
+              placeholder="請輸入統一編號"
+              required
+            >
 
-<label>拜訪對象</label>
-<input id="contactPerson">
+            <button
+              id="lookupButton"
+              class="lookup-button"
+              type="button"
+            >
+              查詢客戶
+            </button>
+          </div>
 
-<label>拜訪內容</label>
-<textarea id="visitContent"></textarea>
+          <div
+            id="lookupStatus"
+            class="status"
+          ></div>
+        </div>
 
-<label>下一步</label>
-<textarea id="nextStep"></textarea>
+        <div
+          id="newCustomerBox"
+          class="new-customer-box"
+        >
+          <div class="new-customer-title">
+            此統編尚未建立，送出時將同步建立客戶主檔。
+          </div>
 
-<label>附件</label>
-<input type="file" id="attachment">
+          <div class="field">
+            <label for="customerName">
+              客戶名稱
+              <span class="required">*</span>
+            </label>
 
-<button onclick="submitForm()">
-送出
-</button>
+            <input
+              id="customerName"
+              name="customerName"
+              placeholder="請輸入客戶名稱"
+              readonly
+            >
+          </div>
 
-<script>
+          <div class="field">
+            <label for="phone">
+              電話
+            </label>
 
-document.getElementById("visitDate").value=
-new Date().toISOString().split("T")[0];
+            <input
+              id="phone"
+              name="phone"
+              inputmode="tel"
+              placeholder="請輸入電話"
+              readonly
+            >
+          </div>
+        </div>
 
-async function submitForm(){
+        <div
+          id="existingCustomerBox"
+          class="new-customer-box"
+        >
+          <div class="field">
+            <label>客戶名稱</label>
 
- const payload = {
+            <input
+              id="existingCustomerName"
+              readonly
+            >
+          </div>
 
-   統一編號:
-     document.getElementById("taxId").value,
+          <div class="field">
+            <label>電話</label>
 
-   客戶名稱:
-     document.getElementById("customerName").value,
+            <input
+              id="existingPhone"
+              readonly
+            >
+          </div>
+        </div>
 
-   電話:
-     document.getElementById("phone").value,
+        <div class="field">
+          <label for="visitDate">
+            拜訪日期
+            <span class="required">*</span>
+          </label>
 
-   拜訪日期:
-     document.getElementById("visitDate").value,
+          <input
+            type="date"
+            id="visitDate"
+            required
+          >
+        </div>
 
-   拜訪對象:
-     document.getElementById("contactPerson").value,
+        <div class="field">
+          <label for="contactPerson">
+            拜訪對象
+            <span class="required">*</span>
+          </label>
 
-   拜訪內容:
-     document.getElementById("visitContent").value,
+          <input
+            id="contactPerson"
+            placeholder="例如：王經理"
+            required
+          >
+        </div>
 
-   下一步:
-     document.getElementById("nextStep").value
+        <div class="field">
+          <label for="visitContent">
+            拜訪內容
+            <span class="required">*</span>
+          </label>
 
- };
+          <textarea
+            id="visitContent"
+            placeholder="請輸入本次拜訪內容"
+            required
+          ></textarea>
+        </div>
 
- const response = await fetch(
-   "/api/visit",
-   {
-     method:"POST",
-     headers:{
-       "Content-Type":"application/json"
-     },
-     body:JSON.stringify(payload)
-   }
- );
+        <div class="field">
+          <label for="nextStep">
+            下一步
+            <span class="required">*</span>
+          </label>
 
- const result = await response.json();
+          <textarea
+            id="nextStep"
+            placeholder="例如：安排 Demo、提供報價或再次聯絡"
+            required
+          ></textarea>
+        </div>
 
- alert(
-   "建立成功\n紀錄ID：" +
-   result.id
- );
+        <div class="field">
+          <label for="attachment">
+            附件
+          </label>
 
-}
+          <input
+            type="file"
+            id="attachment"
+          >
 
-</script>
+          <div class="status warning">
+            此版本尚未上傳附件至 Kintone。
+          </div>
+        </div>
 
+        <button
+          id="submitButton"
+          class="submit-button"
+          type="submit"
+        >
+          送出拜訪紀錄
+        </button>
+
+        <div
+          id="result"
+          class="result"
+        ></div>
+
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const taxIdInput =
+      document.getElementById("taxId");
+
+    const lookupButton =
+      document.getElementById("lookupButton");
+
+    const lookupStatus =
+      document.getElementById("lookupStatus");
+
+    const newCustomerBox =
+      document.getElementById("newCustomerBox");
+
+    const existingCustomerBox =
+      document.getElementById(
+        "existingCustomerBox"
+      );
+
+    const customerNameInput =
+      document.getElementById("customerName");
+
+    const phoneInput =
+      document.getElementById("phone");
+
+    const existingCustomerName =
+      document.getElementById(
+        "existingCustomerName"
+      );
+
+    const existingPhone =
+      document.getElementById(
+        "existingPhone"
+      );
+
+    const visitForm =
+      document.getElementById("visitForm");
+
+    const submitButton =
+      document.getElementById("submitButton");
+
+    const resultBox =
+      document.getElementById("result");
+
+    let customerLookupState = "unknown";
+
+    document.getElementById("visitDate").value =
+      new Date().toLocaleDateString(
+        "sv-SE",
+        {
+          timeZone: "Asia/Taipei"
+        }
+      );
+
+    function showLookupStatus(type, message) {
+      lookupStatus.className =
+        `status ${type}`;
+
+      lookupStatus.textContent = message;
+    }
+
+    function resetCustomerDisplay() {
+      customerLookupState = "unknown";
+
+      newCustomerBox.classList.remove(
+        "visible"
+      );
+
+      existingCustomerBox.classList.remove(
+        "visible"
+      );
+
+      customerNameInput.value = "";
+      phoneInput.value = "";
+
+      customerNameInput.readOnly = true;
+      phoneInput.readOnly = true;
+
+      existingCustomerName.value = "";
+      existingPhone.value = "";
+
+      lookupStatus.className = "status";
+      lookupStatus.textContent = "";
+    }
+
+    taxIdInput.addEventListener(
+      "input",
+      resetCustomerDisplay
+    );
+
+    async function lookupCustomer() {
+      const taxId =
+        taxIdInput.value.trim();
+
+      if (!taxId) {
+        showLookupStatus(
+          "error",
+          "請先輸入統一編號"
+        );
+
+        taxIdInput.focus();
+        return;
+      }
+
+      lookupButton.disabled = true;
+      lookupButton.textContent = "查詢中...";
+
+      showLookupStatus(
+        "warning",
+        "正在查詢客戶主檔"
+      );
+
+      try {
+        const response = await fetch(
+          `/api/customer?taxId=` +
+          encodeURIComponent(taxId)
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(
+            data.message || "查詢失敗"
+          );
+        }
+
+        if (data.found) {
+          customerLookupState = "existing";
+
+          existingCustomerName.value =
+            data.customer.客戶名稱 || "";
+
+          existingPhone.value =
+            data.customer.電話 || "";
+
+          customerNameInput.value =
+            data.customer.客戶名稱 || "";
+
+          phoneInput.value =
+            data.customer.電話 || "";
+
+          newCustomerBox.classList.remove(
+            "visible"
+          );
+
+          existingCustomerBox.classList.add(
+            "visible"
+          );
+
+          showLookupStatus(
+            "success",
+            "已找到客戶主檔"
+          );
+        } else {
+          customerLookupState = "new";
+
+          customerNameInput.readOnly = false;
+          phoneInput.readOnly = false;
+
+          existingCustomerBox.classList.remove(
+            "visible"
+          );
+
+          newCustomerBox.classList.add(
+            "visible"
+          );
+
+          showLookupStatus(
+            "warning",
+            "查無客戶，請補填客戶名稱與電話"
+          );
+
+          customerNameInput.focus();
+        }
+      } catch (error) {
+        customerLookupState = "unknown";
+
+        showLookupStatus(
+          "error",
+          error.message
+        );
+      } finally {
+        lookupButton.disabled = false;
+        lookupButton.textContent =
+          "查詢客戶";
+      }
+    }
+
+    lookupButton.addEventListener(
+      "click",
+      lookupCustomer
+    );
+
+    taxIdInput.addEventListener(
+      "keydown",
+      event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          lookupCustomer();
+        }
+      }
+    );
+
+    visitForm.addEventListener(
+      "submit",
+      async event => {
+        event.preventDefault();
+
+        if (customerLookupState === "unknown") {
+          showLookupStatus(
+            "error",
+            "請先按「查詢客戶」"
+          );
+
+          return;
+        }
+
+        if (
+          customerLookupState === "new" &&
+          !customerNameInput.value.trim()
+        ) {
+          alert("新客戶請輸入客戶名稱");
+          customerNameInput.focus();
+          return;
+        }
+
+        const payload = {
+          統一編號:
+            taxIdInput.value.trim(),
+
+          客戶名稱:
+            customerNameInput.value.trim(),
+
+          電話:
+            phoneInput.value.trim(),
+
+          拜訪日期:
+            document
+              .getElementById("visitDate")
+              .value,
+
+          拜訪對象:
+            document
+              .getElementById(
+                "contactPerson"
+              )
+              .value
+              .trim(),
+
+          拜訪內容:
+            document
+              .getElementById(
+                "visitContent"
+              )
+              .value
+              .trim(),
+
+          下一步:
+            document
+              .getElementById("nextStep")
+              .value
+              .trim()
+        };
+
+        submitButton.disabled = true;
+        submitButton.textContent = "送出中...";
+
+        resultBox.classList.remove("visible");
+        resultBox.textContent = "";
+
+        try {
+          const response = await fetch(
+            "/api/visit",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+              body: JSON.stringify(payload)
+            }
+          );
+
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            throw new Error(
+              data.message ||
+              "建立拜訪紀錄失敗"
+            );
+          }
+
+          const customerMessage =
+            data.customerCreated
+              ? "新客戶主檔已同步建立"
+              : "使用既有客戶主檔";
+
+          resultBox.innerHTML =
+            "<strong>拜訪紀錄建立成功</strong>" +
+            "<br>" +
+            customerMessage +
+            "<br>" +
+            "Kintone Record ID：" +
+            data.visitRecordId;
+
+          resultBox.classList.add("visible");
+
+          visitForm.reset();
+
+          document.getElementById(
+            "visitDate"
+          ).value =
+            new Date().toLocaleDateString(
+              "sv-SE",
+              {
+                timeZone: "Asia/Taipei"
+              }
+            );
+
+          resetCustomerDisplay();
+
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: "smooth"
+          });
+
+        } catch (error) {
+          alert(error.message);
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent =
+            "送出拜訪紀錄";
+        }
+      }
+    );
+  </script>
 </body>
 </html>
