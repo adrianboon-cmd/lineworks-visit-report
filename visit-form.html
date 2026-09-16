@@ -422,23 +422,36 @@ async function sendSuccessMessage(
       ? "新客戶主檔已同步建立"
       : "使用既有客戶主檔";
 
-  const message =
-`✅ 拜訪紀錄已建立
+const kintoneUrl =
+  `https://fxtw-seminar.cybozu.com/k/1350/show#record=${recordId}`;
 
-客戶：${payload.客戶名稱}
-統一編號：${payload.統一編號}
-電話：${payload.電話 || "未填寫"}
-拜訪日期：${payload.拜訪日期}
-拜訪對象：${payload.拜訪對象}
+const message =
+`📋【拜訪紀錄回報完成】
 
-拜訪內容：
+✅ 紀錄建立成功
+
+🏢 客戶名稱｜${payload.客戶名稱}
+🆔 統一編號｜${payload.統一編號}
+👤 拜訪對象｜${payload.拜訪對象}
+📅 拜訪日期｜${payload.拜訪日期}
+📞 聯絡電話｜${payload.電話 || "未填寫"}
+
+💬 拜訪內容
 ${payload.拜訪內容}
 
-下一步：
+📝 下一步
 ${payload.下一步}
 
-Kintone Record ID：${recordId}
-${customerStatus}`;
+📂 Kintone Record ID｜${recordId}
+
+${customerCreated
+  ? "🆕 已建立新客戶主檔"
+  : "📚 使用既有客戶主檔"}
+
+🔗 Kintone 紀錄
+${kintoneUrl}
+
+🎉 感謝回報！`;
 
   await woff.sendMessage({
     content: message
