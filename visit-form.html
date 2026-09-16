@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>拜訪紀錄回報</title>
+
+<style>
+
+body{
+    font-family: Arial;
+    max-width:700px;
+    margin:auto;
+    padding:20px;
+}
+
+label{
+    display:block;
+    margin-top:15px;
+}
+
+input, textarea{
+    width:100%;
+    padding:10px;
+    box-sizing:border-box;
+}
+
+button{
+    margin-top:20px;
+    padding:12px;
+    width:100%;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>📝 拜訪紀錄回報</h2>
+
+<label>統一編號</label>
+<input id="taxId">
+
+<label>客戶名稱</label>
+<input id="customerName" readonly>
+
+<label>電話</label>
+<input id="phone" readonly>
+
+<label>拜訪日期</label>
+<input type="date" id="visitDate">
+
+<label>拜訪對象</label>
+<input id="contactPerson">
+
+<label>拜訪內容</label>
+<textarea id="visitContent"></textarea>
+
+<label>下一步</label>
+<textarea id="nextStep"></textarea>
+
+<label>附件</label>
+<input type="file" id="attachment">
+
+<button onclick="submitForm()">
+送出
+</button>
+
+<script>
+
+document.getElementById("visitDate").value=
+new Date().toISOString().split("T")[0];
+
+async function submitForm(){
+
+ alert("下一步再接Kintone API");
+
+}
+
+</script>
+
+</body>
+</html>
