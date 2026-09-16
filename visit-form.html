@@ -73,7 +73,48 @@ new Date().toISOString().split("T")[0];
 
 async function submitForm(){
 
- alert("下一步再接Kintone API");
+ const payload = {
+
+   統一編號:
+     document.getElementById("taxId").value,
+
+   客戶名稱:
+     document.getElementById("customerName").value,
+
+   電話:
+     document.getElementById("phone").value,
+
+   拜訪日期:
+     document.getElementById("visitDate").value,
+
+   拜訪對象:
+     document.getElementById("contactPerson").value,
+
+   拜訪內容:
+     document.getElementById("visitContent").value,
+
+   下一步:
+     document.getElementById("nextStep").value
+
+ };
+
+ const response = await fetch(
+   "/api/visit",
+   {
+     method:"POST",
+     headers:{
+       "Content-Type":"application/json"
+     },
+     body:JSON.stringify(payload)
+   }
+ );
+
+ const result = await response.json();
+
+ alert(
+   "建立成功\n紀錄ID：" +
+   result.id
+ );
 
 }
 
