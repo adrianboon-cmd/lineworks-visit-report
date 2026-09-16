@@ -198,16 +198,6 @@ async function createCustomer(formData) {
   });
 
 }
-async function createVisit(formData) {
-  /*
-    重要：
-    客戶名稱、電話是 Lookup 複製欄位，
-    不由 REST API 直接寫入。
-
-    只傳統一編號，讓 Kintone Lookup
-    自動帶出客戶名稱與電話。
-  */
-async function createVisit(formData) {
 
   return await callKintone({
     appId: VISIT_APP_ID,
