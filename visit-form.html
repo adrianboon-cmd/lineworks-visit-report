@@ -426,32 +426,25 @@ const kintoneUrl =
   `https://fxtw-seminar.cybozu.com/k/1350/show#record=${recordId}`;
 
 const message =
-`📋【拜訪紀錄回報完成】
+`✅【拜訪紀錄回報完成】
 
-✅ 紀錄建立成功
+🏢 客戶名稱：${payload.客戶名稱}
+🆔 統一編號：${payload.統一編號}
+👤 拜訪對象：${payload.拜訪對象}
+📅 拜訪日期：${payload.拜訪日期}
+📞 聯絡電話：${payload.電話 || "未填寫"}
 
-🏢 客戶名稱｜${payload.客戶名稱}
-🆔 統一編號｜${payload.統一編號}
-👤 拜訪對象｜${payload.拜訪對象}
-📅 拜訪日期｜${payload.拜訪日期}
-📞 聯絡電話｜${payload.電話 || "未填寫"}
-
-💬 拜訪內容
-${payload.拜訪內容}
-
-📝 下一步
-${payload.下一步}
-
-📂 Kintone Record ID｜${recordId}
+💬 拜訪內容：${payload.拜訪內容}
+📝 下一步：${payload.下一步}
 
 ${customerCreated
   ? "🆕 已建立新客戶主檔"
-  : "📚 使用既有客戶主檔"}
+  : "📚 已使用既有客戶檔"}
+  
+📂 Kintone 記錄編號｜${recordId}
+🔗 Kintone 紀錄：${kintoneUrl}
 
-🔗 Kintone 紀錄
-${kintoneUrl}
-
-🎉 感謝回報！`;
+🎉 感謝回報．辛苦了！　`;
 
   await woff.sendMessage({
     content: message
