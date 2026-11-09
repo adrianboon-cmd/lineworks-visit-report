@@ -106,11 +106,6 @@
         0 0 0 3px rgba(31, 111, 235, 0.12);
     }
 
-    input[readonly] {
-      background: #f0f2f4;
-      color: #555;
-    }
-
     textarea {
       min-height: 105px;
       resize: vertical;
@@ -191,16 +186,9 @@
       cursor: pointer;
     }
 
-    .result-item:hover {
-      border-color: #1f6feb;
-      background: #f6f9ff;
-    }
-
     .result-item-name {
       margin-bottom: 6px;
-      color: #1f2328;
       font-weight: 700;
-      line-height: 1.45;
     }
 
     .result-item-info {
@@ -335,1518 +323,1512 @@
 </head>
 
 <body>
-  <div class="container">
-    <div class="card">
-
-      <h1>📝 拜訪紀錄回報</h1>
-
-      <p class="subtitle">
-        搜尋並選擇客戶與聯絡人後，即可建立拜訪紀錄。
-        如果客戶或聯絡人尚未建立，也可以直接在此新增。
-      </p>
-
-      <form id="visitForm">
-
-        <!-- =================================
-             客戶資料
-        ================================== -->
-
-        <div class="section">
-          <h2>1. 選擇客戶</h2>
-
-          <div id="customerSearchArea">
-            <div class="field">
-              <label for="customerKeyword">
-                客戶公司名稱
-                <span class="required">*</span>
-              </label>
-
-              <div class="search-row">
-                <input
-                  id="customerKeyword"
-                  autocomplete="off"
-                  placeholder="例如：富士軟片"
-                >
-
-                <button
-                  id="customerSearchButton"
-                  class="lookup-button"
-                  type="button"
-                >
-                  搜尋客戶
-                </button>
-              </div>
-
-              <div
-                id="customerSearchStatus"
-                class="status"
-              ></div>
-            </div>
-
-            <div
-              id="customerResultArea"
-              class="result-list"
-            >
-              <div
-                id="customerResultTitle"
-                class="result-list-title"
-              ></div>
-
-              <div id="customerResultList"></div>
-
-              <button
-                id="showNewCustomerButton"
-                class="action-button"
-                type="button"
-              >
-                ＋ 找不到客戶，建立新客戶
-              </button>
-            </div>
-          </div>
-
-          <div
-            id="selectedCustomerBox"
-            class="selected-box"
-          >
-            <div class="selected-title">
-              ✅ 已選擇客戶
-            </div>
-
-            <div
-              id="selectedCustomerInfo"
-              class="selected-info"
-            ></div>
-
-            <button
-              id="changeCustomerButton"
-              class="secondary-button"
-              type="button"
-            >
-              重新選擇客戶
-            </button>
-          </div>
-
-          <div
-            id="newCustomerBox"
-            class="form-box"
-          >
-            <div class="form-box-title">
-              🆕 建立新客戶
-            </div>
-
-            <div class="field">
-              <label for="newCompanyId">
-                統一編號
-                <span class="required">*</span>
-              </label>
-
-              <input
-                id="newCompanyId"
-                inputmode="numeric"
-                autocomplete="off"
-                placeholder="請輸入統一編號"
-              >
-            </div>
-
-            <div class="field">
-              <label for="newCompanyName">
-                客戶名稱
-                <span class="required">*</span>
-              </label>
-
-              <input
-                id="newCompanyName"
-                placeholder="請輸入完整公司名稱"
-              >
-            </div>
-
-            <div class="field">
-              <label for="newCompanyPhone">
-                公司電話
-              </label>
-
-              <input
-                id="newCompanyPhone"
-                inputmode="tel"
-                placeholder="請輸入公司電話"
-              >
-            </div>
-
-            <div class="field">
-              <label for="newCompanyAddress">
-                地址
-              </label>
-
-              <input
-                id="newCompanyAddress"
-                placeholder="請輸入公司地址"
-              >
-            </div>
-
-            <div class="field">
-              <label for="newIndustry">
-                產業別
-                <span class="required">*</span>
-              </label>
-
-              <select id="newIndustry">
-                <option value="">
-                  請選擇產業別
-                </option>
-                <option value="製造業">製造業</option>
-                <option value="零售業">零售業</option>
-                <option value="金融業">金融業</option>
-                <option value="服務業">服務業</option>
-                <option value="醫療生技業">醫療生技業</option>
-                <option value="社團法人">社團法人</option>
-                <option value="物流業">物流業</option>
-                <option value="建築營造業">建築營造業</option>
-                <option value="國營事業">國營事業</option>
-                <option value="政教機關">政教機關</option>
-                <option value="資訊業">資訊業</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label for="newCompanyNote">
-                客戶備註
-              </label>
-
-              <textarea
-                id="newCompanyNote"
-                placeholder="可填寫其他客戶資訊"
-              ></textarea>
-            </div>
-
-            <button
-              id="cancelNewCustomerButton"
-              class="secondary-button"
-              type="button"
-            >
-              返回搜尋客戶
-            </button>
-          </div>
-        </div>
-
-        <!-- =================================
-             聯絡人資料
-        ================================== -->
-
-        <div
-          id="contactSection"
-          class="section hidden"
-        >
-          <h2>2. 選擇拜訪對象</h2>
-
-          <div
-            id="contactLoadingStatus"
-            class="status"
-          ></div>
-
-          <div
-            id="contactResultArea"
-            class="result-list"
-          >
-            <div
-              id="contactResultTitle"
-              class="result-list-title"
-            ></div>
-
-            <div id="contactResultList"></div>
-
-            <button
-              id="showNewContactButton"
-              class="action-button"
-              type="button"
-            >
-              ＋ 建立新聯絡人
-            </button>
-          </div>
-
-          <div
-            id="selectedContactBox"
-            class="selected-box"
-          >
-            <div class="selected-title">
-              ✅ 已選擇聯絡人
-            </div>
-
-            <div
-              id="selectedContactInfo"
-              class="selected-info"
-            ></div>
-
-            <button
-              id="changeContactButton"
-              class="secondary-button"
-              type="button"
-            >
-              重新選擇聯絡人
-            </button>
-          </div>
-
-          <div
-            id="newContactBox"
-            class="form-box"
-          >
-            <div class="form-box-title">
-              🆕 建立新聯絡人
-            </div>
-
-            <div class="field">
-              <label for="newContactName">
-                姓名
-                <span class="required">*</span>
-              </label>
-
-              <input
-                id="newContactName"
-                placeholder="請輸入聯絡人姓名"
-              >
-            </div>
-
-            <div class="field">
-              <label for="newDepartment">
-                部門
-              </label>
-
-              <input
-                id="newDepartment"
-                placeholder="例如：資訊部"
-              >
-            </div>
-
-            <div class="field">
-              <label for="newJobTitle">
-                職稱
-              </label>
-
-              <input
-                id="newJobTitle"
-                placeholder="例如：經理"
-              >
-            </div>
-
-            <div class="field">
-              <label for="newEmail">
-                Email
-              </label>
-
-              <input
-                id="newEmail"
-                type="email"
-                inputmode="email"
-                placeholder="例如：name@example.com"
-              >
-            </div>
-
-            <div class="field">
-              <label for="newMobile">
-                手機
-              </label>
-
-              <input
-                id="newMobile"
-                inputmode="tel"
-                placeholder="請輸入手機"
-              >
-            </div>
-
-            <div class="field">
-              <label for="newContactPhone">
-                公司電話
-              </label>
-
-              <input
-                id="newContactPhone"
-                inputmode="tel"
-                placeholder="請輸入公司電話"
-              >
-            </div>
-
-            <div class="field">
-              <label for="newExtension">
-                分機
-              </label>
-
-              <input
-                id="newExtension"
-                inputmode="numeric"
-                placeholder="請輸入分機"
-              >
-            </div>
-
-            <div class="field">
-              <label for="newContactNote">
-                聯絡人備註
-              </label>
-
-              <textarea
-                id="newContactNote"
-                placeholder="可填寫其他聯絡人資訊"
-              ></textarea>
-            </div>
-
-            <button
-              id="cancelNewContactButton"
-              class="secondary-button"
-              type="button"
-            >
-              返回選擇聯絡人
-            </button>
-          </div>
-        </div>
-
-        <!-- =================================
-             拜訪資料
-        ================================== -->
-
-        <div
-          id="visitSection"
-          class="section hidden"
-        >
-          <h2>3. 填寫拜訪內容</h2>
-
-          <div class="field">
-            <label for="visitDate">
-              拜訪日期
-              <span class="required">*</span>
-            </label>
-
-            <input
-              type="date"
-              id="visitDate"
-              required
-            >
-          </div>
-
-          <div class="field">
-            <label for="visitType">
-              拜訪方式
-              <span class="required">*</span>
-            </label>
-
-            <select
-              id="visitType"
-              required
-            >
-              <option value="">
-                請選擇拜訪方式
-              </option>
-              <option value="客戶拜訪">
-                客戶拜訪
-              </option>
-              <option value="線上會議">
-                線上會議
-              </option>
-              <option value="電話">
-                電話
-              </option>
-              <option value="Email">
-                Email
-              </option>
-              <option value="LINE WORKS">
-                LINE WORKS
-              </option>
-              <option value="其他">
-                其他
-              </option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="visitContent">
-              拜訪內容
-              <span class="required">*</span>
-            </label>
-
-            <textarea
-              id="visitContent"
-              placeholder="請輸入本次拜訪內容"
-              required
-            ></textarea>
-          </div>
-
-          <div class="field">
-            <label for="nextStep">
-              下一步
-              <span class="required">*</span>
-            </label>
-
-            <textarea
-              id="nextStep"
-              placeholder="例如：安排 Demo、提供報價或再次聯絡"
-              required
-            ></textarea>
-          </div>
-
-          <div class="field">
-            <label for="nextFollowupDate">
-              下次追蹤日期
-            </label>
-
-            <input
-              type="date"
-              id="nextFollowupDate"
-            >
-          </div>
-
-          <div class="field">
-            <label for="salesStage">
-              案件階段
-            </label>
-
-            <select id="salesStage">
-              <option value="">
-                請選擇案件階段
-              </option>
-              <option value="初次接觸">
-                初次接觸
-              </option>
-              <option value="需求確認">
-                需求確認
-              </option>
-              <option value="提案">
-                提案
-              </option>
-              <option value="Demo">
-                Demo
-              </option>
-              <option value="報價">
-                報價
-              </option>
-              <option value="議價">
-                議價
-              </option>
-              <option value="成交">
-                成交
-              </option>
-              <option value="失單">
-                失單
-              </option>
-              <option value="持續追蹤">
-                持續追蹤
-              </option>
-            </select>
-          </div>
-        </div>
-
-        <button
-          id="submitButton"
-          class="submit-button hidden"
-          type="submit"
-        >
-          送出拜訪紀錄
-        </button>
-
-        <div
-          id="finalResult"
-          class="final-result"
-        ></div>
-
-      </form>
-    </div>
-  </div>
-
-  <script>
-    // ========================================
-    // WOFF 初始化
-    // ========================================
-
-    const WOFF_ID =
-      "vakcc3AB99cWKnhF7K1Jrw";
-
-    const woffInitPromise =
-      new Promise((resolve, reject) => {
-        window.addEventListener(
-          "load",
-          async () => {
-            try {
-              if (
-                typeof window.woff ===
-                "undefined"
-              ) {
-                throw new Error(
-                  "WOFF SDK 未載入"
-                );
-              }
-
-              await woff.init({
-                woffId: WOFF_ID
-              });
-
-              console.log(
-                "WOFF initialized"
-              );
-
-              console.log(
-                "WOFF isInClient:",
-                woff.isInClient()
-              );
-
-              resolve(true);
-            } catch (error) {
-              console.error(
-                "WOFF initialization failed:",
-                error
-              );
-
-              reject(error);
-            }
-          },
-          {
-            once: true
+
+<div class="container">
+<div class="card">
+
+<h1>📝 拜訪紀錄回報</h1>
+
+<p class="subtitle">
+  搜尋並選擇客戶與聯絡人後，即可建立拜訪紀錄。
+  如果客戶或聯絡人尚未建立，也可以直接新增。
+</p>
+
+<form id="visitForm">
+
+<!-- ============================= -->
+<!-- STEP 1 客戶 -->
+<!-- ============================= -->
+
+<div class="section">
+
+<h2>1. 選擇客戶</h2>
+
+<div id="customerSearchArea">
+
+<div class="field">
+
+<label for="customerKeyword">
+  客戶公司名稱
+  <span class="required">*</span>
+</label>
+
+<div class="search-row">
+
+<input
+  id="customerKeyword"
+  autocomplete="off"
+  placeholder="例如：富士軟片"
+>
+
+<button
+  id="customerSearchButton"
+  class="lookup-button"
+  type="button"
+>
+  搜尋客戶
+</button>
+
+</div>
+
+<div
+  id="customerSearchStatus"
+  class="status"
+></div>
+
+</div>
+
+<div
+  id="customerResultArea"
+  class="result-list"
+>
+
+<div
+  id="customerResultTitle"
+  class="result-list-title"
+></div>
+
+<div id="customerResultList"></div>
+
+<button
+  id="showNewCustomerButton"
+  class="action-button"
+  type="button"
+>
+  ＋ 找不到客戶，建立新客戶
+</button>
+
+</div>
+</div>
+
+<div
+  id="selectedCustomerBox"
+  class="selected-box"
+>
+
+<div class="selected-title">
+  ✅ 已選擇客戶
+</div>
+
+<div
+  id="selectedCustomerInfo"
+  class="selected-info"
+></div>
+
+<button
+  id="changeCustomerButton"
+  class="secondary-button"
+  type="button"
+>
+  重新選擇客戶
+</button>
+
+</div>
+
+<div
+  id="newCustomerBox"
+  class="form-box"
+>
+
+<div class="form-box-title">
+  🆕 建立新客戶
+</div>
+
+<div class="field">
+<label for="newCompanyId">
+統一編號 <span class="required">*</span>
+</label>
+<input
+  id="newCompanyId"
+  inputmode="numeric"
+  placeholder="請輸入統一編號"
+>
+</div>
+
+<div class="field">
+<label for="newCompanyName">
+客戶名稱 <span class="required">*</span>
+</label>
+<input
+  id="newCompanyName"
+  placeholder="請輸入完整公司名稱"
+>
+</div>
+
+<div class="field">
+<label for="newCompanyPhone">
+公司電話
+</label>
+<input
+  id="newCompanyPhone"
+  inputmode="tel"
+  placeholder="請輸入公司電話"
+>
+</div>
+
+<div class="field">
+<label for="newCompanyAddress">
+地址
+</label>
+<input
+  id="newCompanyAddress"
+  placeholder="請輸入公司地址"
+>
+</div>
+
+<div class="field">
+
+<label for="newIndustry">
+產業別 <span class="required">*</span>
+</label>
+
+<select id="newIndustry">
+
+<option value="">
+請選擇產業別
+</option>
+
+<option value="製造業">製造業</option>
+<option value="零售業">零售業</option>
+<option value="金融業">金融業</option>
+<option value="服務業">服務業</option>
+<option value="醫療生技業">醫療生技業</option>
+<option value="社團法人">社團法人</option>
+<option value="物流業">物流業</option>
+<option value="建築營造業">建築營造業</option>
+<option value="國營事業">國營事業</option>
+<option value="政教機關">政教機關</option>
+<option value="資訊業">資訊業</option>
+
+</select>
+</div>
+
+<div class="field">
+<label for="newCompanyNote">
+客戶備註
+</label>
+<textarea
+  id="newCompanyNote"
+  placeholder="可填寫其他客戶資訊"
+></textarea>
+</div>
+
+<button
+  id="cancelNewCustomerButton"
+  class="secondary-button"
+  type="button"
+>
+返回搜尋客戶
+</button>
+
+</div>
+</div>
+
+<!-- ============================= -->
+<!-- STEP 2 聯絡人 -->
+<!-- ============================= -->
+
+<div
+  id="contactSection"
+  class="section hidden"
+>
+
+<h2>2. 選擇拜訪對象</h2>
+
+<div
+  id="contactLoadingStatus"
+  class="status"
+></div>
+
+<div
+  id="contactResultArea"
+  class="result-list"
+>
+
+<div
+  id="contactResultTitle"
+  class="result-list-title"
+></div>
+
+<div id="contactResultList"></div>
+
+<button
+  id="showNewContactButton"
+  class="action-button"
+  type="button"
+>
+＋ 建立新聯絡人
+</button>
+
+</div>
+
+<div
+  id="selectedContactBox"
+  class="selected-box"
+>
+
+<div class="selected-title">
+✅ 已選擇聯絡人
+</div>
+
+<div
+  id="selectedContactInfo"
+  class="selected-info"
+></div>
+
+<button
+  id="changeContactButton"
+  class="secondary-button"
+  type="button"
+>
+重新選擇聯絡人
+</button>
+
+</div>
+
+<div
+  id="newContactBox"
+  class="form-box"
+>
+
+<div class="form-box-title">
+🆕 建立新聯絡人
+</div>
+
+<div class="field">
+<label for="newContactName">
+姓名 <span class="required">*</span>
+</label>
+<input
+  id="newContactName"
+  placeholder="請輸入聯絡人姓名"
+>
+</div>
+
+<div class="field">
+<label for="newDepartment">
+部門
+</label>
+<input
+  id="newDepartment"
+  placeholder="例如：資訊部"
+>
+</div>
+
+<div class="field">
+<label for="newJobTitle">
+職稱
+</label>
+<input
+  id="newJobTitle"
+  placeholder="例如：經理"
+>
+</div>
+
+<div class="field">
+<label for="newEmail">
+Email
+</label>
+<input
+  id="newEmail"
+  type="email"
+  placeholder="name@example.com"
+>
+</div>
+
+<div class="field">
+<label for="newMobile">
+手機
+</label>
+<input
+  id="newMobile"
+  inputmode="tel"
+  placeholder="請輸入手機"
+>
+</div>
+
+<div class="field">
+<label for="newContactPhone">
+公司電話
+</label>
+<input
+  id="newContactPhone"
+  inputmode="tel"
+  placeholder="請輸入公司電話"
+>
+</div>
+
+<div class="field">
+<label for="newExtension">
+分機
+</label>
+<input
+  id="newExtension"
+  inputmode="numeric"
+  placeholder="請輸入分機"
+>
+</div>
+
+<div class="field">
+<label for="newContactNote">
+備註
+</label>
+
+<textarea
+  id="newContactNote"
+  placeholder="可填寫其他聯絡人資訊"
+></textarea>
+</div>
+
+<button
+  id="cancelNewContactButton"
+  class="secondary-button"
+  type="button"
+>
+返回選擇聯絡人
+</button>
+
+</div>
+</div>
+
+<!-- ============================= -->
+<!-- STEP 3 拜訪 -->
+<!-- ============================= -->
+
+<div
+  id="visitSection"
+  class="section hidden"
+>
+
+<h2>3. 填寫拜訪內容</h2>
+
+<div class="field">
+
+<label for="visitDate">
+拜訪日期
+<span class="required">*</span>
+</label>
+
+<input
+  type="date"
+  id="visitDate"
+  required
+>
+
+</div>
+
+<div class="field">
+
+<label for="visitType">
+拜訪方式
+<span class="required">*</span>
+</label>
+
+<select
+  id="visitType"
+  required
+>
+
+<option value="">
+請選擇拜訪方式
+</option>
+
+<option value="客戶拜訪">
+客戶拜訪
+</option>
+
+<option value="線上會議">
+線上會議
+</option>
+
+<option value="電話">
+電話
+</option>
+
+<option value="Email">
+Email
+</option>
+
+<option value="LINE WORKS">
+LINE WORKS
+</option>
+
+<option value="其他">
+其他
+</option>
+
+</select>
+</div>
+
+<div class="field">
+
+<label for="visitContent">
+拜訪內容
+<span class="required">*</span>
+</label>
+
+<textarea
+  id="visitContent"
+  placeholder="請輸入本次拜訪內容"
+  required
+></textarea>
+
+</div>
+
+<div class="field">
+
+<label for="nextStep">
+下一步
+<span class="required">*</span>
+</label>
+
+<textarea
+  id="nextStep"
+  placeholder="例如：安排 Demo、提供報價或再次聯絡"
+  required
+></textarea>
+
+</div>
+
+<div class="field">
+
+<label for="nextFollowupDate">
+下次追蹤日期
+</label>
+
+<input
+  type="date"
+  id="nextFollowupDate"
+>
+
+</div>
+
+<div class="field">
+
+<label for="salesStage">
+案件階段
+</label>
+
+<select id="salesStage">
+
+<option value="">
+請選擇案件階段
+</option>
+
+<option value="Stage 1">Stage 1</option>
+<option value="Stage 2">Stage 2</option>
+<option value="Stage 3">Stage 3</option>
+<option value="Stage 4">Stage 4</option>
+<option value="Stage 5">Stage 5</option>
+<option value="Stage 6">Stage 6</option>
+<option value="Stage 7">Stage 7</option>
+
+</select>
+</div>
+
+</div>
+
+<button
+  id="submitButton"
+  class="submit-button hidden"
+  type="submit"
+>
+送出拜訪紀錄
+</button>
+
+<div
+  id="finalResult"
+  class="final-result"
+></div>
+
+</form>
+</div>
+</div>
+
+<script>
+
+// ========================================
+// WOFF
+// ========================================
+
+const WOFF_ID =
+  "vakcc3AB99cWKnhF7K1Jrw";
+
+const woffInitPromise =
+  new Promise((resolve, reject) => {
+
+    window.addEventListener(
+      "load",
+      async () => {
+
+        try {
+
+          if (
+            typeof window.woff ===
+            "undefined"
+          ) {
+            throw new Error(
+              "WOFF SDK 未載入"
+            );
           }
-        );
-      });
 
-    woffInitPromise.catch(() => {});
+          await woff.init({
+            woffId: WOFF_ID
+          });
 
-    // ========================================
-    // DOM
-    // ========================================
+          console.log(
+            "WOFF initialized"
+          );
 
-    const visitForm =
-      document.getElementById(
-        "visitForm"
+          console.log(
+            "WOFF isInClient:",
+            woff.isInClient()
+          );
+
+          resolve(true);
+
+        } catch (error) {
+
+          console.error(
+            "WOFF initialization failed:",
+            error
+          );
+
+          reject(error);
+
+        }
+
+      },
+      { once: true }
+    );
+
+  });
+
+woffInitPromise.catch(() => {});
+
+// ========================================
+// DOM
+// ========================================
+
+const visitForm =
+  document.getElementById("visitForm");
+
+const customerSearchArea =
+  document.getElementById(
+    "customerSearchArea"
+  );
+
+const customerKeyword =
+  document.getElementById(
+    "customerKeyword"
+  );
+
+const customerSearchButton =
+  document.getElementById(
+    "customerSearchButton"
+  );
+
+const customerSearchStatus =
+  document.getElementById(
+    "customerSearchStatus"
+  );
+
+const customerResultArea =
+  document.getElementById(
+    "customerResultArea"
+  );
+
+const customerResultTitle =
+  document.getElementById(
+    "customerResultTitle"
+  );
+
+const customerResultList =
+  document.getElementById(
+    "customerResultList"
+  );
+
+const showNewCustomerButton =
+  document.getElementById(
+    "showNewCustomerButton"
+  );
+
+const selectedCustomerBox =
+  document.getElementById(
+    "selectedCustomerBox"
+  );
+
+const selectedCustomerInfo =
+  document.getElementById(
+    "selectedCustomerInfo"
+  );
+
+const changeCustomerButton =
+  document.getElementById(
+    "changeCustomerButton"
+  );
+
+const newCustomerBox =
+  document.getElementById(
+    "newCustomerBox"
+  );
+
+const newCompanyId =
+  document.getElementById(
+    "newCompanyId"
+  );
+
+const newCompanyName =
+  document.getElementById(
+    "newCompanyName"
+  );
+
+const newCompanyPhone =
+  document.getElementById(
+    "newCompanyPhone"
+  );
+
+const newCompanyAddress =
+  document.getElementById(
+    "newCompanyAddress"
+  );
+
+const newIndustry =
+  document.getElementById(
+    "newIndustry"
+  );
+
+const newCompanyNote =
+  document.getElementById(
+    "newCompanyNote"
+  );
+
+const cancelNewCustomerButton =
+  document.getElementById(
+    "cancelNewCustomerButton"
+  );
+
+const contactSection =
+  document.getElementById(
+    "contactSection"
+  );
+
+const contactLoadingStatus =
+  document.getElementById(
+    "contactLoadingStatus"
+  );
+
+const contactResultArea =
+  document.getElementById(
+    "contactResultArea"
+  );
+
+const contactResultTitle =
+  document.getElementById(
+    "contactResultTitle"
+  );
+
+const contactResultList =
+  document.getElementById(
+    "contactResultList"
+  );
+
+const showNewContactButton =
+  document.getElementById(
+    "showNewContactButton"
+  );
+
+const selectedContactBox =
+  document.getElementById(
+    "selectedContactBox"
+  );
+
+const selectedContactInfo =
+  document.getElementById(
+    "selectedContactInfo"
+  );
+
+const changeContactButton =
+  document.getElementById(
+    "changeContactButton"
+  );
+
+const newContactBox =
+  document.getElementById(
+    "newContactBox"
+  );
+
+const newContactName =
+  document.getElementById(
+    "newContactName"
+  );
+
+const newDepartment =
+  document.getElementById(
+    "newDepartment"
+  );
+
+const newJobTitle =
+  document.getElementById(
+    "newJobTitle"
+  );
+
+const newEmail =
+  document.getElementById(
+    "newEmail"
+  );
+
+const newMobile =
+  document.getElementById(
+    "newMobile"
+  );
+
+const newContactPhone =
+  document.getElementById(
+    "newContactPhone"
+  );
+
+const newExtension =
+  document.getElementById(
+    "newExtension"
+  );
+
+const newContactNote =
+  document.getElementById(
+    "newContactNote"
+  );
+
+const cancelNewContactButton =
+  document.getElementById(
+    "cancelNewContactButton"
+  );
+
+const visitSection =
+  document.getElementById(
+    "visitSection"
+  );
+
+const submitButton =
+  document.getElementById(
+    "submitButton"
+  );
+
+const finalResult =
+  document.getElementById(
+    "finalResult"
+  );
+
+// ========================================
+// STATE
+// ========================================
+
+let customerMode = "unknown";
+let contactMode = "unknown";
+
+let selectedCustomer = null;
+let selectedContact = null;
+
+// ========================================
+// DATE
+// ========================================
+
+function setToday() {
+
+  document.getElementById(
+    "visitDate"
+  ).value =
+    new Date().toLocaleDateString(
+      "sv-SE",
+      {
+        timeZone: "Asia/Taipei"
+      }
+    );
+
+}
+
+setToday();
+
+// ========================================
+// COMMON
+// ========================================
+
+function escapeHtml(value) {
+
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+}
+
+function showStatus(
+  element,
+  type,
+  message
+) {
+
+  element.className =
+    `status ${type}`;
+
+  element.textContent =
+    message;
+
+}
+
+function clearStatus(element) {
+
+  element.className =
+    "status";
+
+  element.textContent =
+    "";
+
+}
+
+// ========================================
+// CUSTOMER SEARCH
+// ========================================
+
+async function searchCustomers() {
+
+  const keyword =
+    customerKeyword.value.trim();
+
+  if (!keyword) {
+
+    showStatus(
+      customerSearchStatus,
+      "error",
+      "請輸入客戶公司名稱"
+    );
+
+    return;
+  }
+
+  if (keyword.length < 2) {
+
+    showStatus(
+      customerSearchStatus,
+      "error",
+      "請至少輸入 2 個字"
+    );
+
+    return;
+  }
+
+  customerSearchButton.disabled =
+    true;
+
+  customerSearchButton.textContent =
+    "搜尋中...";
+
+  showStatus(
+    customerSearchStatus,
+    "warning",
+    "正在搜尋客戶資料"
+  );
+
+  customerResultArea.classList.remove(
+    "visible"
+  );
+
+  customerResultList.innerHTML =
+    "";
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/customers?keyword=" +
+        encodeURIComponent(keyword)
       );
 
-    const customerSearchArea =
-      document.getElementById(
-        "customerSearchArea"
-      );
+    const data =
+      await response.json();
 
-    const customerKeyword =
-      document.getElementById(
-        "customerKeyword"
-      );
-
-    const customerSearchButton =
-      document.getElementById(
-        "customerSearchButton"
-      );
-
-    const customerSearchStatus =
-      document.getElementById(
-        "customerSearchStatus"
-      );
-
-    const customerResultArea =
-      document.getElementById(
-        "customerResultArea"
-      );
-
-    const customerResultTitle =
-      document.getElementById(
-        "customerResultTitle"
-      );
-
-    const customerResultList =
-      document.getElementById(
-        "customerResultList"
-      );
-
-    const showNewCustomerButton =
-      document.getElementById(
-        "showNewCustomerButton"
-      );
-
-    const selectedCustomerBox =
-      document.getElementById(
-        "selectedCustomerBox"
-      );
-
-    const selectedCustomerInfo =
-      document.getElementById(
-        "selectedCustomerInfo"
-      );
-
-    const changeCustomerButton =
-      document.getElementById(
-        "changeCustomerButton"
-      );
-
-    const newCustomerBox =
-      document.getElementById(
-        "newCustomerBox"
-      );
-
-    const newCompanyId =
-      document.getElementById(
-        "newCompanyId"
-      );
-
-    const newCompanyName =
-      document.getElementById(
-        "newCompanyName"
-      );
-
-    const newCompanyPhone =
-      document.getElementById(
-        "newCompanyPhone"
-      );
-
-    const newCompanyAddress =
-      document.getElementById(
-        "newCompanyAddress"
-      );
-
-    const newIndustry =
-      document.getElementById(
-        "newIndustry"
-      );
-
-    const newCompanyNote =
-      document.getElementById(
-        "newCompanyNote"
-      );
-
-    const cancelNewCustomerButton =
-      document.getElementById(
-        "cancelNewCustomerButton"
-      );
-
-    const contactSection =
-      document.getElementById(
-        "contactSection"
-      );
-
-    const contactLoadingStatus =
-      document.getElementById(
-        "contactLoadingStatus"
-      );
-
-    const contactResultArea =
-      document.getElementById(
-        "contactResultArea"
-      );
-
-    const contactResultTitle =
-      document.getElementById(
-        "contactResultTitle"
-      );
-
-    const contactResultList =
-      document.getElementById(
-        "contactResultList"
-      );
-
-    const showNewContactButton =
-      document.getElementById(
-        "showNewContactButton"
-      );
-
-    const selectedContactBox =
-      document.getElementById(
-        "selectedContactBox"
-      );
-
-    const selectedContactInfo =
-      document.getElementById(
-        "selectedContactInfo"
-      );
-
-    const changeContactButton =
-      document.getElementById(
-        "changeContactButton"
-      );
-
-    const newContactBox =
-      document.getElementById(
-        "newContactBox"
-      );
-
-    const newContactName =
-      document.getElementById(
-        "newContactName"
-      );
-
-    const newDepartment =
-      document.getElementById(
-        "newDepartment"
-      );
-
-    const newJobTitle =
-      document.getElementById(
-        "newJobTitle"
-      );
-
-    const newEmail =
-      document.getElementById(
-        "newEmail"
-      );
-
-    const newMobile =
-      document.getElementById(
-        "newMobile"
-      );
-
-    const newContactPhone =
-      document.getElementById(
-        "newContactPhone"
-      );
-
-    const newExtension =
-      document.getElementById(
-        "newExtension"
-      );
-
-    const newContactNote =
-      document.getElementById(
-        "newContactNote"
-      );
-
-    const cancelNewContactButton =
-      document.getElementById(
-        "cancelNewContactButton"
-      );
-
-    const visitSection =
-      document.getElementById(
-        "visitSection"
-      );
-
-    const submitButton =
-      document.getElementById(
-        "submitButton"
-      );
-
-    const finalResult =
-      document.getElementById(
-        "finalResult"
-      );
-
-    // ========================================
-    // 狀態
-    // ========================================
-
-    let customerMode = "unknown";
-    let contactMode = "unknown";
-
-    let selectedCustomer = null;
-    let selectedContact = null;
-
-    // ========================================
-    // 預設日期
-    // ========================================
-
-    function setToday() {
-      document.getElementById(
-        "visitDate"
-      ).value =
-        new Date().toLocaleDateString(
-          "sv-SE",
-          {
-            timeZone: "Asia/Taipei"
-          }
-        );
-    }
-
-    setToday();
-
-    // ========================================
-    // 共用函式
-    // ========================================
-
-    function escapeHtml(value) {
-      return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    function showStatus(
-      element,
-      type,
-      message
+    if (
+      !response.ok ||
+      !data.success
     ) {
-      element.className =
-        `status ${type}`;
-
-      element.textContent = message;
-    }
-
-    function clearStatus(element) {
-      element.className = "status";
-      element.textContent = "";
-    }
-
-    function scrollToElement(element) {
-      window.setTimeout(() => {
-        element.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
-      }, 100);
-    }
-
-    // ========================================
-    // 重設流程
-    // ========================================
-
-    function resetContactSelection() {
-      contactMode = "unknown";
-      selectedContact = null;
-
-      selectedContactBox.classList.remove(
-        "visible"
-      );
-
-      newContactBox.classList.remove(
-        "visible"
-      );
-
-      contactResultArea.classList.remove(
-        "visible"
-      );
-
-      contactResultList.innerHTML = "";
-
-      visitSection.classList.add(
-        "hidden"
-      );
-
-      submitButton.classList.add(
-        "hidden"
-      );
-
-      clearStatus(
-        contactLoadingStatus
+      throw new Error(
+        data.message ||
+        "客戶搜尋失敗"
       );
     }
 
-    function resetCustomerSelection() {
-      customerMode = "unknown";
-      selectedCustomer = null;
+    renderCustomers(
+      data.customers || []
+    );
 
-      selectedCustomerBox.classList.remove(
-        "visible"
+    if (data.found) {
+
+      showStatus(
+        customerSearchStatus,
+        "success",
+        `找到 ${data.count} 筆客戶`
       );
 
-      newCustomerBox.classList.remove(
-        "visible"
-      );
-
-      customerResultArea.classList.remove(
-        "visible"
-      );
-
-      customerResultList.innerHTML = "";
-
-      customerSearchArea.classList.remove(
-        "hidden"
-      );
-
-      contactSection.classList.add(
-        "hidden"
-      );
-
-      resetContactSelection();
-
-      clearStatus(
-        customerSearchStatus
-      );
-    }
-
-    // ========================================
-    // 搜尋客戶
-    // ========================================
-
-    async function searchCustomers() {
-      const keyword =
-        customerKeyword.value.trim();
-
-      if (!keyword) {
-        showStatus(
-          customerSearchStatus,
-          "error",
-          "請輸入客戶公司名稱"
-        );
-
-        customerKeyword.focus();
-        return;
-      }
-
-      if (keyword.length < 2) {
-        showStatus(
-          customerSearchStatus,
-          "error",
-          "請至少輸入 2 個字"
-        );
-
-        customerKeyword.focus();
-        return;
-      }
-
-      customerSearchButton.disabled = true;
-      customerSearchButton.textContent =
-        "搜尋中...";
-
-      customerResultArea.classList.remove(
-        "visible"
-      );
-
-      customerResultList.innerHTML = "";
+    } else {
 
       showStatus(
         customerSearchStatus,
         "warning",
-        "正在搜尋客戶資料"
+        "找不到符合的客戶，可以建立新客戶"
       );
 
-      try {
-        const response = await fetch(
-          "/api/customers?keyword=" +
-          encodeURIComponent(keyword)
-        );
-
-        const data =
-          await response.json();
-
-        if (
-          !response.ok ||
-          !data.success
-        ) {
-          throw new Error(
-            data.message ||
-            "客戶搜尋失敗"
-          );
-        }
-
-        renderCustomerResults(
-          data.customers || []
-        );
-
-        if (data.found) {
-          showStatus(
-            customerSearchStatus,
-            "success",
-            `找到 ${data.count} 筆客戶資料`
-          );
-        } else {
-          showStatus(
-            customerSearchStatus,
-            "warning",
-            "找不到符合的客戶，可以直接建立新客戶"
-          );
-        }
-      } catch (error) {
-        showStatus(
-          customerSearchStatus,
-          "error",
-          error.message
-        );
-      } finally {
-        customerSearchButton.disabled =
-          false;
-
-        customerSearchButton.textContent =
-          "搜尋客戶";
-      }
     }
 
-    function renderCustomerResults(
-      customers
+  } catch (error) {
+
+    showStatus(
+      customerSearchStatus,
+      "error",
+      error.message
+    );
+
+  } finally {
+
+    customerSearchButton.disabled =
+      false;
+
+    customerSearchButton.textContent =
+      "搜尋客戶";
+
+  }
+
+}
+
+function renderCustomers(
+  customers
+) {
+
+  customerResultList.innerHTML =
+    "";
+
+  customerResultTitle.textContent =
+    customers.length
+      ? `找到 ${customers.length} 筆客戶，請選擇：`
+      : "找不到符合的客戶。";
+
+  customers.forEach(customer => {
+
+    const button =
+      document.createElement(
+        "button"
+      );
+
+    button.type = "button";
+
+    button.className =
+      "result-item";
+
+    button.innerHTML =
+      `<div class="result-item-name">` +
+      `${escapeHtml(customer.company_name)}` +
+      `</div>` +
+
+      `<div class="result-item-info">` +
+
+      `統一編號：${escapeHtml(customer.company_id)}<br>` +
+
+      `產業別：${escapeHtml(customer.industry || "未設定")}<br>` +
+
+      `公司電話：${escapeHtml(customer.company_phone || "未填寫")}` +
+
+      `</div>`;
+
+    button.addEventListener(
+      "click",
+      () =>
+        selectCustomer(
+          customer
+        )
+    );
+
+    customerResultList.appendChild(
+      button
+    );
+
+  });
+
+  customerResultArea.classList.add(
+    "visible"
+  );
+
+}
+
+// ========================================
+// SELECT CUSTOMER
+// ========================================
+
+async function selectCustomer(
+  customer
+) {
+
+  customerMode =
+    "existing";
+
+  selectedCustomer =
+    customer;
+
+  selectedCustomerInfo.innerHTML =
+
+    `<strong>${escapeHtml(customer.company_name)}</strong><br>` +
+
+    `統一編號：${escapeHtml(customer.company_id)}<br>` +
+
+    `產業別：${escapeHtml(customer.industry || "未設定")}<br>` +
+
+    `公司電話：${escapeHtml(customer.company_phone || "未填寫")}`;
+
+  customerSearchArea.classList.add(
+    "hidden"
+  );
+
+  selectedCustomerBox.classList.add(
+    "visible"
+  );
+
+  contactSection.classList.remove(
+    "hidden"
+  );
+
+  await loadContacts(
+    customer.company_id
+  );
+
+}
+
+// ========================================
+// NEW CUSTOMER
+// ========================================
+
+function showNewCustomer() {
+
+  customerMode =
+    "new";
+
+  selectedCustomer =
+    null;
+
+  customerSearchArea.classList.add(
+    "hidden"
+  );
+
+  selectedCustomerBox.classList.remove(
+    "visible"
+  );
+
+  newCustomerBox.classList.add(
+    "visible"
+  );
+
+  newCompanyName.value =
+    customerKeyword.value.trim();
+
+  contactSection.classList.remove(
+    "hidden"
+  );
+
+  showNewContact();
+
+}
+
+// ========================================
+// CONTACTS
+// ========================================
+
+async function loadContacts(
+  companyId
+) {
+
+  selectedContact =
+    null;
+
+  contactMode =
+    "unknown";
+
+  selectedContactBox.classList.remove(
+    "visible"
+  );
+
+  newContactBox.classList.remove(
+    "visible"
+  );
+
+  visitSection.classList.add(
+    "hidden"
+  );
+
+  submitButton.classList.add(
+    "hidden"
+  );
+
+  showStatus(
+    contactLoadingStatus,
+    "warning",
+    "正在讀取聯絡人..."
+  );
+
+  try {
+
+    const response =
+      await fetch(
+        "/api/contacts?companyId=" +
+        encodeURIComponent(companyId)
+      );
+
+    const data =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !data.success
     ) {
-      customerResultList.innerHTML = "";
 
-      if (customers.length === 0) {
-        customerResultTitle.textContent =
-          "找不到符合的客戶。";
-
-        customerResultArea.classList.add(
-          "visible"
-        );
-
-        return;
-      }
-
-      customerResultTitle.textContent =
-        `找到 ${customers.length} 筆客戶，請選擇正確的公司：`;
-
-      customers.forEach(customer => {
-        const button =
-          document.createElement(
-            "button"
-          );
-
-        button.type = "button";
-        button.className =
-          "result-item";
-
-        button.innerHTML =
-          `<div class="result-item-name">` +
-          `${escapeHtml(customer.company_name)}` +
-          `</div>` +
-          `<div class="result-item-info">` +
-          `統一編號：${escapeHtml(customer.company_id || "未填寫")}<br>` +
-          `產業別：${escapeHtml(customer.industry || "未設定")}<br>` +
-          `公司電話：${escapeHtml(customer.company_phone || "未填寫")}` +
-          `</div>`;
-
-        button.addEventListener(
-          "click",
-          () => {
-            selectExistingCustomer(
-              customer
-            );
-          }
-        );
-
-        customerResultList.appendChild(
-          button
-        );
-      });
-
-      customerResultArea.classList.add(
-        "visible"
+      throw new Error(
+        data.message ||
+        "聯絡人查詢失敗"
       );
+
     }
 
-    // ========================================
-    // 選擇既有客戶
-    // ========================================
+    renderContacts(
+      data.contacts || []
+    );
 
-    async function selectExistingCustomer(
-      customer
-    ) {
-      customerMode = "existing";
-      selectedCustomer = customer;
+    if (data.found) {
 
-      selectedCustomerInfo.innerHTML =
-        `<strong>${escapeHtml(customer.company_name)}</strong><br>` +
-        `統一編號：${escapeHtml(customer.company_id)}<br>` +
-        `產業別：${escapeHtml(customer.industry || "未設定")}<br>` +
-        `公司電話：${escapeHtml(customer.company_phone || "未填寫")}<br>` +
-        `地址：${escapeHtml(customer.company_address || "未填寫")}`;
-
-      customerSearchArea.classList.add(
-        "hidden"
+      showStatus(
+        contactLoadingStatus,
+        "success",
+        `找到 ${data.count} 位聯絡人`
       );
 
-      newCustomerBox.classList.remove(
-        "visible"
-      );
+    } else {
 
-      selectedCustomerBox.classList.add(
-        "visible"
-      );
-
-      contactSection.classList.remove(
-        "hidden"
-      );
-
-      resetContactSelection();
-
-      await loadContacts(
-        customer.company_id
-      );
-
-      scrollToElement(
-        contactSection
-      );
-    }
-
-    // ========================================
-    // 新客戶
-    // ========================================
-
-    function showNewCustomerForm() {
-      customerMode = "new";
-      selectedCustomer = null;
-
-      selectedCustomerBox.classList.remove(
-        "visible"
-      );
-
-      customerSearchArea.classList.add(
-        "hidden"
-      );
-
-      newCustomerBox.classList.add(
-        "visible"
-      );
-
-      newCompanyName.value =
-        customerKeyword.value.trim();
-
-      contactSection.classList.remove(
-        "hidden"
-      );
-
-      resetContactSelection();
-
-      /*
-        新客戶尚未存在於 kintone，
-        因此一定要同步建立新聯絡人。
-      */
-
-      showNewContactForm();
-
-      newCompanyId.focus();
-    }
-
-    // ========================================
-    // 查詢聯絡人
-    // ========================================
-
-    async function loadContacts(
-      companyId
-    ) {
       showStatus(
         contactLoadingStatus,
         "warning",
-        "正在讀取聯絡人資料"
+        "此客戶目前沒有聯絡人"
       );
 
-      contactResultArea.classList.remove(
-        "visible"
-      );
-
-      try {
-        const response = await fetch(
-          "/api/contacts?companyId=" +
-          encodeURIComponent(companyId)
-        );
-
-        const data =
-          await response.json();
-
-        if (
-          !response.ok ||
-          !data.success
-        ) {
-          throw new Error(
-            data.message ||
-            "聯絡人查詢失敗"
-          );
-        }
-
-        renderContactResults(
-          data.contacts || []
-        );
-
-        if (data.found) {
-          showStatus(
-            contactLoadingStatus,
-            "success",
-            `找到 ${data.count} 位聯絡人`
-          );
-        } else {
-          showStatus(
-            contactLoadingStatus,
-            "warning",
-            "此客戶尚未建立聯絡人"
-          );
-        }
-      } catch (error) {
-        showStatus(
-          contactLoadingStatus,
-          "error",
-          error.message
-        );
-      }
     }
 
-    function renderContactResults(
-      contacts
-    ) {
-      contactResultList.innerHTML = "";
+  } catch (error) {
 
-      if (contacts.length === 0) {
-        contactResultTitle.textContent =
-          "目前沒有聯絡人，請建立新聯絡人。";
+    showStatus(
+      contactLoadingStatus,
+      "error",
+      error.message
+    );
 
-        contactResultArea.classList.add(
-          "visible"
+  }
+
+}
+
+function renderContacts(
+  contacts
+) {
+
+  contactResultList.innerHTML =
+    "";
+
+  contactResultTitle.textContent =
+    contacts.length
+      ? `找到 ${contacts.length} 位聯絡人，請選擇：`
+      : "目前沒有聯絡人。";
+
+  contacts.forEach(
+    contact => {
+
+      const button =
+        document.createElement(
+          "button"
         );
 
-        return;
-      }
+      button.type =
+        "button";
 
-      contactResultTitle.textContent =
-        `找到 ${contacts.length} 位聯絡人，請選擇本次拜訪對象：`;
+      button.className =
+        "result-item";
 
-      contacts.forEach(contact => {
-        const button =
-          document.createElement(
-            "button"
-          );
+      button.innerHTML =
 
-        button.type = "button";
-        button.className =
-          "result-item";
+        `<div class="result-item-name">` +
 
-        button.innerHTML =
-          `<div class="result-item-name">` +
-          `${escapeHtml(contact.contact_name || "未填寫姓名")}` +
-          `</div>` +
-          `<div class="result-item-info">` +
-          `部門：${escapeHtml(contact.department || "未填寫")}<br>` +
-          `職稱：${escapeHtml(contact.job_title || "未填寫")}<br>` +
-          `手機：${escapeHtml(contact.mobile || "未填寫")}<br>` +
-          `Contact ID：${escapeHtml(contact.contact_id)}` +
-          `</div>`;
+        `${escapeHtml(contact.contact_name || "未填寫姓名")}` +
 
-        button.addEventListener(
-          "click",
-          () => {
-            selectExistingContact(
-              contact
-            );
-          }
-        );
+        `</div>` +
 
-        contactResultList.appendChild(
-          button
-        );
-      });
+        `<div class="result-item-info">` +
 
-      contactResultArea.classList.add(
-        "visible"
-      );
-    }
-
-    // ========================================
-    // 選擇既有聯絡人
-    // ========================================
-
-    function selectExistingContact(
-      contact
-    ) {
-      contactMode = "existing";
-      selectedContact = contact;
-
-      selectedContactInfo.innerHTML =
-        `<strong>${escapeHtml(contact.contact_name)}</strong><br>` +
         `部門：${escapeHtml(contact.department || "未填寫")}<br>` +
+
         `職稱：${escapeHtml(contact.job_title || "未填寫")}<br>` +
-        `Email：${escapeHtml(contact.email || "未填寫")}<br>` +
+
         `手機：${escapeHtml(contact.mobile || "未填寫")}<br>` +
-        `Contact ID：${escapeHtml(contact.contact_id)}`;
 
-      contactResultArea.classList.remove(
-        "visible"
-      );
+        `Contact ID：${escapeHtml(contact.contact_id)}` +
 
-      newContactBox.classList.remove(
-        "visible"
-      );
+        `</div>`;
 
-      selectedContactBox.classList.add(
-        "visible"
-      );
-
-      showVisitSection();
-    }
-
-    // ========================================
-    // 新聯絡人
-    // ========================================
-
-    function showNewContactForm() {
-      contactMode = "new";
-      selectedContact = null;
-
-      selectedContactBox.classList.remove(
-        "visible"
-      );
-
-      contactResultArea.classList.remove(
-        "visible"
-      );
-
-      newContactBox.classList.add(
-        "visible"
-      );
-
-      if (
-        selectedCustomer &&
-        selectedCustomer.company_phone &&
-        !newContactPhone.value
-      ) {
-        newContactPhone.value =
-          selectedCustomer.company_phone;
-      }
-
-      showVisitSection();
-
-      window.setTimeout(() => {
-        newContactName.focus();
-      }, 100);
-    }
-
-    function showVisitSection() {
-      visitSection.classList.remove(
-        "hidden"
-      );
-
-      submitButton.classList.remove(
-        "hidden"
-      );
-
-      scrollToElement(
-        visitSection
-      );
-    }
-
-    // ========================================
-    // 事件
-    // ========================================
-
-    customerSearchButton.addEventListener(
-      "click",
-      searchCustomers
-    );
-
-    customerKeyword.addEventListener(
-      "keydown",
-      event => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          searchCustomers();
-        }
-      }
-    );
-
-    showNewCustomerButton.addEventListener(
-      "click",
-      showNewCustomerForm
-    );
-
-    cancelNewCustomerButton.addEventListener(
-      "click",
-      () => {
-        resetCustomerSelection();
-        customerKeyword.focus();
-      }
-    );
-
-    changeCustomerButton.addEventListener(
-      "click",
-      () => {
-        resetCustomerSelection();
-        customerKeyword.focus();
-      }
-    );
-
-    showNewContactButton.addEventListener(
-      "click",
-      showNewContactForm
-    );
-
-    cancelNewContactButton.addEventListener(
-      "click",
-      async () => {
-        newContactBox.classList.remove(
-          "visible"
-        );
-
-        visitSection.classList.add(
-          "hidden"
-        );
-
-        submitButton.classList.add(
-          "hidden"
-        );
-
-        contactMode = "unknown";
-        selectedContact = null;
-
-        if (
-          customerMode === "existing" &&
-          selectedCustomer
-        ) {
-          await loadContacts(
-            selectedCustomer.company_id
-          );
-        } else {
-          showNewContactForm();
-        }
-      }
-    );
-
-    changeContactButton.addEventListener(
-      "click",
-      async () => {
-        selectedContactBox.classList.remove(
-          "visible"
-        );
-
-        visitSection.classList.add(
-          "hidden"
-        );
-
-        submitButton.classList.add(
-          "hidden"
-        );
-
-        contactMode = "unknown";
-        selectedContact = null;
-
-        if (
-          customerMode === "existing" &&
-          selectedCustomer
-        ) {
-          await loadContacts(
-            selectedCustomer.company_id
-          );
-        }
-      }
-    );
-
-    // ========================================
-    // LINE WORKS 回傳訊息
-    // ========================================
-
-    async function sendSuccessMessage(
-      responseData,
-      visitData
-    ) {
-      try {
-        await woffInitPromise;
-      } catch (error) {
-        throw new Error(
-          "WOFF 初始化失敗：" +
-          (
-            error.message ||
-            error.code ||
-            "未知錯誤"
+      button.addEventListener(
+        "click",
+        () =>
+          selectContact(
+            contact
           )
-        );
-      }
+      );
 
-      if (!woff.isInClient()) {
-        throw new Error(
-          "目前不是從 LINE WORKS App 的聊天室開啟"
-        );
-      }
+      contactResultList.appendChild(
+        button
+      );
 
-      const customer =
-        responseData.customer;
+    }
+  );
 
-      const contact =
-        responseData.contact;
+  contactResultArea.classList.add(
+    "visible"
+  );
 
-      const recordId =
-        responseData.visitRecordId;
+}
 
-      const kintoneUrl =
-        `https://fxtw-seminar.cybozu.com/k/1350/show#record=${recordId}`;
+// ========================================
+// SELECT CONTACT
+// ========================================
 
-      const customerStatus =
-        responseData.customerCreated
-          ? "🆕 已建立新客戶主檔"
-          : "📚 已使用既有客戶主檔";
+function selectContact(
+  contact
+) {
 
-      const contactStatus =
-        responseData.contactCreated
-          ? `🆕 已建立新聯絡人：${contact.contact_id}`
-          : `👤 已使用既有聯絡人：${contact.contact_id}`;
+  contactMode =
+    "existing";
 
-      const message =
+  selectedContact =
+    contact;
+
+  selectedContactInfo.innerHTML =
+
+    `<strong>${escapeHtml(contact.contact_name)}</strong><br>` +
+
+    `部門：${escapeHtml(contact.department || "未填寫")}<br>` +
+
+    `職稱：${escapeHtml(contact.job_title || "未填寫")}<br>` +
+
+    `Email：${escapeHtml(contact.email || "未填寫")}<br>` +
+
+    `手機：${escapeHtml(contact.mobile || "未填寫")}<br>` +
+
+    `Contact ID：${escapeHtml(contact.contact_id)}`;
+
+  contactResultArea.classList.remove(
+    "visible"
+  );
+
+  selectedContactBox.classList.add(
+    "visible"
+  );
+
+  newContactBox.classList.remove(
+    "visible"
+  );
+
+  showVisit();
+
+}
+
+// ========================================
+// NEW CONTACT
+// ========================================
+
+function showNewContact() {
+
+  contactMode =
+    "new";
+
+  selectedContact =
+    null;
+
+  contactResultArea.classList.remove(
+    "visible"
+  );
+
+  selectedContactBox.classList.remove(
+    "visible"
+  );
+
+  newContactBox.classList.add(
+    "visible"
+  );
+
+  if (
+    selectedCustomer &&
+    selectedCustomer.company_phone
+  ) {
+
+    newContactPhone.value =
+      selectedCustomer.company_phone;
+
+  }
+
+  showVisit();
+
+}
+
+function showVisit() {
+
+  visitSection.classList.remove(
+    "hidden"
+  );
+
+  submitButton.classList.remove(
+    "hidden"
+  );
+
+}
+
+// ========================================
+// EVENTS
+// ========================================
+
+customerSearchButton.addEventListener(
+  "click",
+  searchCustomers
+);
+
+customerKeyword.addEventListener(
+  "keydown",
+  event => {
+
+    if (
+      event.key === "Enter"
+    ) {
+
+      event.preventDefault();
+
+      searchCustomers();
+
+    }
+
+  }
+);
+
+showNewCustomerButton.addEventListener(
+  "click",
+  showNewCustomer
+);
+
+changeCustomerButton.addEventListener(
+  "click",
+  () => {
+
+    location.reload();
+
+  }
+);
+
+cancelNewCustomerButton.addEventListener(
+  "click",
+  () => {
+
+    location.reload();
+
+  }
+);
+
+showNewContactButton.addEventListener(
+  "click",
+  showNewContact
+);
+
+changeContactButton.addEventListener(
+  "click",
+  () => {
+
+    selectedContact =
+      null;
+
+    contactMode =
+      "unknown";
+
+    selectedContactBox.classList.remove(
+      "visible"
+    );
+
+    visitSection.classList.add(
+      "hidden"
+    );
+
+    submitButton.classList.add(
+      "hidden"
+    );
+
+    if (selectedCustomer) {
+
+      loadContacts(
+        selectedCustomer.company_id
+      );
+
+    }
+
+  }
+);
+
+cancelNewContactButton.addEventListener(
+  "click",
+  () => {
+
+    if (
+      customerMode === "existing" &&
+      selectedCustomer
+    ) {
+
+      loadContacts(
+        selectedCustomer.company_id
+      );
+
+    }
+
+  }
+);
+
+// ========================================
+// LINE WORKS MESSAGE
+// ========================================
+
+async function sendSuccessMessage(
+  data,
+  visitData
+) {
+
+  await woffInitPromise;
+
+  if (
+    !woff.isInClient()
+  ) {
+
+    throw new Error(
+      "目前不是從 LINE WORKS App 聊天室開啟"
+    );
+
+  }
+
+  const customer =
+    data.customer;
+
+  const contact =
+    data.contact;
+
+  const recordId =
+    data.visitRecordId;
+
+  const kintoneUrl =
+    `https://fxtw-seminar.cybozu.com/k/1350/show#record=${recordId}`;
+
+  const message =
 `✅【拜訪紀錄回報完成】
 
 🏢 客戶名稱：${customer.company_name}
@@ -1864,355 +1846,373 @@
 📆 下次追蹤日期：${visitData.next_followup_date || "未設定"}
 📊 案件階段：${visitData.sales_stage || "未設定"}
 
-${customerStatus}
-${contactStatus}
+${data.customerCreated
+  ? "🆕 已建立新客戶主檔"
+  : "📚 已使用既有客戶主檔"}
+
+${data.contactCreated
+  ? `🆕 已建立新聯絡人：${contact.contact_id}`
+  : `👤 已使用既有聯絡人：${contact.contact_id}`}
 
 📂 Kintone 記錄編號｜${recordId}
 🔗 Kintone 紀錄：${kintoneUrl}
 
 🎉 感謝回報，辛苦了！`;
 
-      await woff.sendMessage({
-        content: message
-      });
+  await woff.sendMessage({
+    content: message
+  });
 
-      return true;
+}
+
+// ========================================
+// SUBMIT
+// ========================================
+
+visitForm.addEventListener(
+  "submit",
+  async event => {
+
+    event.preventDefault();
+
+    if (
+      customerMode === "unknown"
+    ) {
+
+      alert(
+        "請先選擇客戶"
+      );
+
+      return;
+
     }
 
-    // ========================================
-    // 送出
-    // ========================================
+    if (
+      contactMode === "unknown"
+    ) {
 
-    visitForm.addEventListener(
-      "submit",
-      async event => {
-        event.preventDefault();
+      alert(
+        "請先選擇聯絡人"
+      );
 
-        if (
-          ![
-            "existing",
-            "new"
-          ].includes(customerMode)
-        ) {
-          alert(
-            "請先選擇或建立客戶"
-          );
+      return;
 
-          return;
-        }
+    }
 
-        if (
-          ![
-            "existing",
-            "new"
-          ].includes(contactMode)
-        ) {
-          alert(
-            "請先選擇或建立聯絡人"
-          );
+    let customerData;
 
-          return;
-        }
+    if (
+      customerMode === "existing"
+    ) {
 
-        let customerData;
+      customerData = {
+        company_id:
+          selectedCustomer.company_id
+      };
 
-        if (
-          customerMode === "existing"
-        ) {
-          customerData = {
-            company_id:
-              selectedCustomer.company_id
-          };
-        } else {
-          if (
-            !newCompanyId.value.trim()
-          ) {
-            alert(
-              "請輸入新客戶統一編號"
-            );
+    } else {
 
-            newCompanyId.focus();
-            return;
-          }
+      if (
+        !newCompanyId.value.trim() ||
+        !newCompanyName.value.trim() ||
+        !newIndustry.value
+      ) {
 
-          if (
-            !newCompanyName.value.trim()
-          ) {
-            alert(
-              "請輸入新客戶名稱"
-            );
-
-            newCompanyName.focus();
-            return;
-          }
-
-          if (!newIndustry.value) {
-            alert(
-              "請選擇新客戶產業別"
-            );
-
-            newIndustry.focus();
-            return;
-          }
-
-          customerData = {
-            company_id:
-              newCompanyId.value.trim(),
-
-            company_name:
-              newCompanyName.value.trim(),
-
-            company_phone:
-              newCompanyPhone.value.trim(),
-
-            company_address:
-              newCompanyAddress.value.trim(),
-
-            industry:
-              newIndustry.value,
-
-            company_note:
-              newCompanyNote.value.trim()
-          };
-        }
-
-        let contactData;
-
-        if (
-          contactMode === "existing"
-        ) {
-          contactData = {
-            contact_id:
-              selectedContact.contact_id
-          };
-        } else {
-          if (
-            !newContactName.value.trim()
-          ) {
-            alert(
-              "請輸入新聯絡人姓名"
-            );
-
-            newContactName.focus();
-            return;
-          }
-
-          contactData = {
-            contact_name:
-              newContactName.value.trim(),
-
-            department:
-              newDepartment.value.trim(),
-
-            job_title:
-              newJobTitle.value.trim(),
-
-            email:
-              newEmail.value.trim(),
-
-            mobile:
-              newMobile.value.trim(),
-
-            phone:
-              newContactPhone.value.trim(),
-
-            extension:
-              newExtension.value.trim(),
-
-            contact_note:
-              newContactNote.value.trim()
-          };
-        }
-
-        const visitData = {
-          visit_date:
-            document.getElementById(
-              "visitDate"
-            ).value,
-
-          visit_type:
-            document.getElementById(
-              "visitType"
-            ).value,
-
-          visit_content:
-            document.getElementById(
-              "visitContent"
-            ).value.trim(),
-
-          next_step:
-            document.getElementById(
-              "nextStep"
-            ).value.trim(),
-
-          next_followup_date:
-            document.getElementById(
-              "nextFollowupDate"
-            ).value,
-
-          sales_stage:
-            document.getElementById(
-              "salesStage"
-            ).value
-        };
-
-        if (!visitData.visit_date) {
-          alert("請選擇拜訪日期");
-          return;
-        }
-
-        if (!visitData.visit_type) {
-          alert("請選擇拜訪方式");
-          return;
-        }
-
-        if (!visitData.visit_content) {
-          alert("請輸入拜訪內容");
-          return;
-        }
-
-        if (!visitData.next_step) {
-          alert("請輸入下一步");
-          return;
-        }
-
-        const payload = {
-          customerMode,
-          contactMode,
-          customer: customerData,
-          contact: contactData,
-          visit: visitData
-        };
-
-        submitButton.disabled = true;
-        submitButton.textContent =
-          "送出中...";
-
-        finalResult.classList.remove(
-          "visible"
+        alert(
+          "請完成新客戶必填資料"
         );
 
-        finalResult.textContent = "";
+        return;
 
-        try {
-          const response = await fetch(
-            "/api/visit",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type":
-                  "application/json"
-              },
-              body: JSON.stringify(
+      }
+
+      customerData = {
+
+        company_id:
+          newCompanyId.value.trim(),
+
+        company_name:
+          newCompanyName.value.trim(),
+
+        company_phone:
+          newCompanyPhone.value.trim(),
+
+        company_address:
+          newCompanyAddress.value.trim(),
+
+        industry:
+          newIndustry.value,
+
+        company_note:
+          newCompanyNote.value.trim()
+
+      };
+
+    }
+
+    let contactData;
+
+    if (
+      contactMode === "existing"
+    ) {
+
+      contactData = {
+        contact_id:
+          selectedContact.contact_id
+      };
+
+    } else {
+
+      if (
+        !newContactName.value.trim()
+      ) {
+
+        alert(
+          "請輸入聯絡人姓名"
+        );
+
+        return;
+
+      }
+
+      contactData = {
+
+        contact_name:
+          newContactName.value.trim(),
+
+        department:
+          newDepartment.value.trim(),
+
+        job_title:
+          newJobTitle.value.trim(),
+
+        email:
+          newEmail.value.trim(),
+
+        mobile:
+          newMobile.value.trim(),
+
+        phone:
+          newContactPhone.value.trim(),
+
+        extension:
+          newExtension.value.trim(),
+
+        contact_note:
+          newContactNote.value.trim()
+
+      };
+
+    }
+
+    const visitData = {
+
+      visit_date:
+        document.getElementById(
+          "visitDate"
+        ).value,
+
+      visit_type:
+        document.getElementById(
+          "visitType"
+        ).value,
+
+      visit_content:
+        document.getElementById(
+          "visitContent"
+        ).value.trim(),
+
+      next_step:
+        document.getElementById(
+          "nextStep"
+        ).value.trim(),
+
+      next_followup_date:
+        document.getElementById(
+          "nextFollowupDate"
+        ).value,
+
+      sales_stage:
+        document.getElementById(
+          "salesStage"
+        ).value
+
+    };
+
+    if (
+      !visitData.visit_date ||
+      !visitData.visit_type ||
+      !visitData.visit_content ||
+      !visitData.next_step
+    ) {
+
+      alert(
+        "請完成拜訪資料必填欄位"
+      );
+
+      return;
+
+    }
+
+    const payload = {
+
+      customerMode,
+      contactMode,
+
+      customer:
+        customerData,
+
+      contact:
+        contactData,
+
+      visit:
+        visitData
+
+    };
+
+    submitButton.disabled =
+      true;
+
+    submitButton.textContent =
+      "送出中...";
+
+    try {
+
+      const response =
+        await fetch(
+          "/api/visit",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify(
                 payload
               )
-            }
-          );
-
-          const data =
-            await response.json();
-
-          if (
-            !response.ok ||
-            !data.success
-          ) {
-            throw new Error(
-              data.message ||
-              "建立拜訪紀錄失敗"
-            );
           }
+        );
 
-          let chatMessageSent = false;
-          let chatMessageError = "";
+      const data =
+        await response.json();
 
-          try {
-            await sendSuccessMessage(
-              data,
-              visitData
-            );
+      if (
+        !response.ok ||
+        !data.success
+      ) {
 
-            chatMessageSent = true;
-          } catch (messageError) {
-            chatMessageError =
-              messageError.message ||
-              "聊天室訊息傳送失敗";
+        throw new Error(
+          data.message ||
+          "建立拜訪紀錄失敗"
+        );
 
-            console.error(
-              "WOFF sendMessage failed:",
-              messageError
-            );
-          }
-
-          const customerMessage =
-            data.customerCreated
-              ? "新客戶主檔已同步建立"
-              : "已使用既有客戶主檔";
-
-          const contactMessage =
-            data.contactCreated
-              ? "新聯絡人已同步建立"
-              : "已使用既有聯絡人";
-
-          finalResult.innerHTML =
-            "<strong>✅ 拜訪紀錄建立成功</strong>" +
-            "<br>" +
-            escapeHtml(customerMessage) +
-            "<br>" +
-            escapeHtml(contactMessage) +
-            "<br>" +
-            "客戶：" +
-            escapeHtml(
-              data.customer.company_name
-            ) +
-            "<br>" +
-            "聯絡人：" +
-            escapeHtml(
-              data.contact.contact_name
-            ) +
-            "<br>" +
-            "Contact ID：" +
-            escapeHtml(
-              data.contact.contact_id
-            ) +
-            "<br>" +
-            "Kintone Record ID：" +
-            escapeHtml(
-              data.visitRecordId
-            ) +
-            "<br>" +
-            (
-              chatMessageSent
-                ? "LINE WORKS 聊天室訊息已送出"
-                : "Kintone 已建立，但聊天室訊息未送出：" +
-                  escapeHtml(
-                    chatMessageError
-                  )
-            );
-
-          finalResult.classList.add(
-            "visible"
-          );
-
-          window.scrollTo({
-            top:
-              document.body.scrollHeight,
-            behavior: "smooth"
-          });
-
-        } catch (error) {
-          alert(error.message);
-
-          console.error(
-            "Submit failed:",
-            error
-          );
-        } finally {
-          submitButton.disabled = false;
-          submitButton.textContent =
-            "送出拜訪紀錄";
-        }
       }
-    );
-  </script>
+
+      let messageResult =
+        "LINE WORKS 訊息已送出";
+
+      try {
+
+        await sendSuccessMessage(
+          data,
+          visitData
+        );
+
+      } catch (
+        messageError
+      ) {
+
+        console.error(
+          "WOFF message failed:",
+          messageError
+        );
+
+        messageResult =
+          "Kintone 已完成，但 LINE WORKS 訊息傳送失敗：" +
+          (
+            messageError.message ||
+            "未知錯誤"
+          );
+
+      }
+
+      finalResult.innerHTML =
+
+        "<strong>✅ 拜訪紀錄建立成功</strong>" +
+
+        "<br><br>" +
+
+        "客戶：" +
+        escapeHtml(
+          data.customer.company_name
+        ) +
+
+        "<br>" +
+
+        "聯絡人：" +
+        escapeHtml(
+          data.contact.contact_name
+        ) +
+
+        "<br>" +
+
+        "Contact ID：" +
+        escapeHtml(
+          data.contact.contact_id
+        ) +
+
+        "<br>" +
+
+        "Kintone Record ID：" +
+        escapeHtml(
+          data.visitRecordId
+        ) +
+
+        "<br><br>" +
+
+        escapeHtml(
+          messageResult
+        );
+
+      finalResult.classList.add(
+        "visible"
+      );
+
+      window.scrollTo({
+        top:
+          document.body.scrollHeight,
+        behavior:
+          "smooth"
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Submit failed:",
+        error
+      );
+
+      alert(
+        error.message
+      );
+
+    } finally {
+
+      submitButton.disabled =
+        false;
+
+      submitButton.textContent =
+        "送出拜訪紀錄";
+
+    }
+
+  }
+);
+
+</script>
+
 </body>
 </html>
