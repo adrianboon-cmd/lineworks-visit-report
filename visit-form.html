@@ -2,6 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1"
@@ -47,6 +48,7 @@
       margin: 0 0 22px;
       color: #666;
       font-size: 14px;
+      line-height: 1.6;
     }
 
     .field {
@@ -83,7 +85,8 @@
       outline: none;
       border-color: #1f6feb;
       box-shadow:
-        0 0 0 3px rgba(31, 111, 235, 0.12);
+        0 0 0 3px
+        rgba(31, 111, 235, 0.12);
     }
 
     input[readonly] {
@@ -96,7 +99,7 @@
       resize: vertical;
     }
 
-    .tax-row {
+    .search-row {
       display: grid;
       grid-template-columns: 1fr 110px;
       gap: 10px;
@@ -144,23 +147,117 @@
       background: #ffebe9;
     }
 
-    .new-customer-box {
+    .customer-results {
       display: none;
-      margin-bottom: 18px;
-      padding: 14px;
-      border: 1px solid #f0c36d;
-      border-radius: 10px;
-      background: #fffaf0;
+      margin-top: 12px;
     }
 
-    .new-customer-box.visible {
+    .customer-results.visible {
       display: block;
     }
 
-    .new-customer-title {
-      margin-bottom: 12px;
+    .customer-result-title {
+      margin-bottom: 9px;
+      color: #444;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .customer-item {
+      width: 100%;
+      margin-bottom: 9px;
+      padding: 13px;
+      border: 1px solid #d8dee4;
+      border-radius: 10px;
+      background: #fff;
+      color: #222;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .customer-item:hover {
+      border-color: #1f6feb;
+      background: #f6f9ff;
+    }
+
+    .customer-item.selected {
+      border: 2px solid #1f6feb;
+      background: #eef5ff;
+    }
+
+    .customer-item-name {
+      margin-bottom: 6px;
+      color: #1f2328;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .customer-item-info {
+      color: #666;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .create-customer-button {
+      margin-top: 5px;
+      padding: 12px;
+      border: 1px dashed #c17b00;
+      border-radius: 8px;
+      background: #fffaf0;
       color: #7a4e00;
       font-weight: 700;
+      cursor: pointer;
+    }
+
+    .customer-box {
+      display: none;
+      margin-bottom: 18px;
+      padding: 14px;
+      border-radius: 10px;
+    }
+
+    .customer-box.visible {
+      display: block;
+    }
+
+    .existing-customer-box {
+      border: 1px solid #8cc9a0;
+      background: #f0fff4;
+    }
+
+    .new-customer-box {
+      border: 1px solid #f0c36d;
+      background: #fffaf0;
+    }
+
+    .customer-box-title {
+      margin-bottom: 14px;
+      font-weight: 700;
+    }
+
+    .existing-customer-box
+    .customer-box-title {
+      color: #116329;
+    }
+
+    .new-customer-box
+    .customer-box-title {
+      color: #7a4e00;
+    }
+
+    .customer-box .field:last-child {
+      margin-bottom: 0;
+    }
+
+    .change-customer-button {
+      margin-top: 3px;
+      padding: 10px;
+      border: 1px solid #6e7781;
+      border-radius: 8px;
+      background: #fff;
+      color: #57606a;
+      font-weight: 700;
+      cursor: pointer;
     }
 
     .submit-button {
@@ -194,7 +291,7 @@
     }
 
     @media (max-width: 480px) {
-      .tax-row {
+      .search-row {
         grid-template-columns: 1fr;
       }
 
@@ -210,10 +307,12 @@
         padding: 17px;
       }
     }
-</style>
+  </style>
 
-<script charset="utf-8" src="https://static.worksmobile.net/static/wm/woff/edge/3.7.1/sdk.js"></script>
-
+  <script
+    charset="utf-8"
+    src="https://static.worksmobile.net/static/wm/woff/edge/3.7.1/sdk.js"
+  ></script>
 </head>
 
 <body>
@@ -223,25 +322,29 @@
       <h1>📝 拜訪紀錄回報</h1>
 
       <p class="subtitle">
-  輸入統一編號後，系統會自動查詢或建立客戶主檔，並同步建立拜訪紀錄。
+        輸入客戶公司名稱後，系統會搜尋
+        Kintone 客戶主檔。選擇客戶後會自動帶入公司資訊；
+        如果查無客戶，也可以直接建立新的客戶主檔。
       </p>
 
       <form id="visitForm">
 
-        <div class="field">
-          <label for="taxId">
-            統一編號
+        <!-- 客戶名稱搜尋 -->
+
+        <div
+          id="customerSearchSection"
+          class="field"
+        >
+          <label for="customerKeyword">
+            客戶公司名稱
             <span class="required">*</span>
           </label>
 
-          <div class="tax-row">
+          <div class="search-row">
             <input
-              id="taxId"
-              name="taxId"
-              inputmode="numeric"
+              id="customerKeyword"
               autocomplete="off"
-              placeholder="請輸入統一編號"
-              required
+              placeholder="例如：富士軟片"
             >
 
             <button
@@ -249,7 +352,7 @@
               class="lookup-button"
               type="button"
             >
-              查詢客戶
+              搜尋客戶
             </button>
           </div>
 
@@ -257,54 +360,55 @@
             id="lookupStatus"
             class="status"
           ></div>
+
+          <div
+            id="customerResults"
+            class="customer-results"
+          >
+            <div
+              id="customerResultTitle"
+              class="customer-result-title"
+            ></div>
+
+            <div id="customerResultList"></div>
+
+            <button
+              id="createCustomerButton"
+              class="create-customer-button"
+              type="button"
+            >
+              ＋ 找不到要拜訪的客戶，建立新客戶
+            </button>
+          </div>
         </div>
 
-        <div
-          id="newCustomerBox"
-          class="new-customer-box"
-        >
-          <div class="new-customer-title">
-            此統編尚未建立，送出時將同步建立客戶主檔。
-          </div>
-
-          <div class="field">
-            <label for="customerName">
-              客戶名稱
-              <span class="required">*</span>
-            </label>
-
-            <input
-              id="customerName"
-              name="customerName"
-              placeholder="請輸入客戶名稱"
-              readonly
-            >
-          </div>
-
-          <div class="field">
-            <label for="phone">
-              電話
-            </label>
-
-            <input
-              id="phone"
-              name="phone"
-              inputmode="tel"
-              placeholder="請輸入電話"
-              readonly
-            >
-          </div>
-        </div>
+        <!-- 已選擇既有客戶 -->
 
         <div
           id="existingCustomerBox"
-          class="new-customer-box"
+          class="
+            customer-box
+            existing-customer-box
+          "
         >
+          <div class="customer-box-title">
+            ✅ 已選擇既有客戶
+          </div>
+
           <div class="field">
             <label>客戶名稱</label>
 
             <input
               id="existingCustomerName"
+              readonly
+            >
+          </div>
+
+          <div class="field">
+            <label>統一編號</label>
+
+            <input
+              id="existingTaxId"
               readonly
             >
           </div>
@@ -317,7 +421,77 @@
               readonly
             >
           </div>
+
+          <button
+            id="changeExistingCustomerButton"
+            class="change-customer-button"
+            type="button"
+          >
+            重新搜尋客戶
+          </button>
         </div>
+
+        <!-- 新客戶資料 -->
+
+        <div
+          id="newCustomerBox"
+          class="
+            customer-box
+            new-customer-box
+          "
+        >
+          <div class="customer-box-title">
+            🆕 建立新客戶主檔
+          </div>
+
+          <div class="field">
+            <label for="newCustomerName">
+              客戶完整名稱
+              <span class="required">*</span>
+            </label>
+
+            <input
+              id="newCustomerName"
+              placeholder="請輸入完整公司名稱"
+            >
+          </div>
+
+          <div class="field">
+            <label for="newTaxId">
+              統一編號
+              <span class="required">*</span>
+            </label>
+
+            <input
+              id="newTaxId"
+              inputmode="numeric"
+              autocomplete="off"
+              placeholder="請輸入統一編號"
+            >
+          </div>
+
+          <div class="field">
+            <label for="newPhone">
+              電話
+            </label>
+
+            <input
+              id="newPhone"
+              inputmode="tel"
+              placeholder="請輸入電話"
+            >
+          </div>
+
+          <button
+            id="cancelNewCustomerButton"
+            class="change-customer-button"
+            type="button"
+          >
+            返回搜尋客戶
+          </button>
+        </div>
+
+        <!-- 拜訪資料 -->
 
         <div class="field">
           <label for="visitDate">
@@ -389,43 +563,579 @@
   </div>
 
   <script>
-async function sendSuccessMessage(
-  payload,
-  recordId,
-  customerCreated
-) {
-  /*
-    不再只檢查布林值。
-    直接等待 WOFF 初始化流程完成。
-  */
-  try {
-    await woffInitPromise;
-  } catch (error) {
-    throw new Error(
-      "WOFF 初始化失敗：" +
-      (
-        error.message ||
-        error.code ||
-        "未知錯誤"
-      )
+    // ====================================
+    // WOFF 初始化
+    // ====================================
+
+    const WOFF_ID =
+      "vakcc3AB99cWKnhF7K1Jrw";
+
+    let woffInitError = null;
+
+    const woffInitPromise =
+      new Promise((resolve, reject) => {
+        window.addEventListener(
+          "load",
+          async () => {
+            try {
+              if (
+                typeof window.woff ===
+                "undefined"
+              ) {
+                throw new Error(
+                  "WOFF SDK 未載入，請檢查 SDK script URL"
+                );
+              }
+
+              console.log(
+                "WOFF SDK version:",
+                woff.getVersion()
+              );
+
+              await woff.init({
+                woffId: WOFF_ID
+              });
+
+              console.log(
+                "WOFF initialized successfully"
+              );
+
+              console.log(
+                "WOFF isInClient:",
+                woff.isInClient()
+              );
+
+              woffInitError = null;
+              resolve(true);
+            } catch (error) {
+              woffInitError = error;
+
+              console.error(
+                "WOFF initialization failed"
+              );
+
+              console.error(
+                "Code:",
+                error.code || "NO_CODE"
+              );
+
+              console.error(
+                "Message:",
+                error.message || error
+              );
+
+              reject(error);
+            }
+          },
+          {
+            once: true
+          }
+        );
+      });
+
+    woffInitPromise.catch(() => {});
+
+    // ====================================
+    // 取得畫面元件
+    // ====================================
+
+    const customerSearchSection =
+      document.getElementById(
+        "customerSearchSection"
+      );
+
+    const customerKeywordInput =
+      document.getElementById(
+        "customerKeyword"
+      );
+
+    const lookupButton =
+      document.getElementById(
+        "lookupButton"
+      );
+
+    const lookupStatus =
+      document.getElementById(
+        "lookupStatus"
+      );
+
+    const customerResults =
+      document.getElementById(
+        "customerResults"
+      );
+
+    const customerResultTitle =
+      document.getElementById(
+        "customerResultTitle"
+      );
+
+    const customerResultList =
+      document.getElementById(
+        "customerResultList"
+      );
+
+    const createCustomerButton =
+      document.getElementById(
+        "createCustomerButton"
+      );
+
+    const existingCustomerBox =
+      document.getElementById(
+        "existingCustomerBox"
+      );
+
+    const existingCustomerName =
+      document.getElementById(
+        "existingCustomerName"
+      );
+
+    const existingTaxId =
+      document.getElementById(
+        "existingTaxId"
+      );
+
+    const existingPhone =
+      document.getElementById(
+        "existingPhone"
+      );
+
+    const changeExistingCustomerButton =
+      document.getElementById(
+        "changeExistingCustomerButton"
+      );
+
+    const newCustomerBox =
+      document.getElementById(
+        "newCustomerBox"
+      );
+
+    const newCustomerName =
+      document.getElementById(
+        "newCustomerName"
+      );
+
+    const newTaxId =
+      document.getElementById(
+        "newTaxId"
+      );
+
+    const newPhone =
+      document.getElementById(
+        "newPhone"
+      );
+
+    const cancelNewCustomerButton =
+      document.getElementById(
+        "cancelNewCustomerButton"
+      );
+
+    const visitForm =
+      document.getElementById(
+        "visitForm"
+      );
+
+    const submitButton =
+      document.getElementById(
+        "submitButton"
+      );
+
+    const resultBox =
+      document.getElementById(
+        "result"
+      );
+
+    let selectedCustomer = null;
+    let customerMode = "unknown";
+
+    // ====================================
+    // 預設拜訪日期
+    // ====================================
+
+    function setToday() {
+      document.getElementById(
+        "visitDate"
+      ).value =
+        new Date().toLocaleDateString(
+          "sv-SE",
+          {
+            timeZone: "Asia/Taipei"
+          }
+        );
+    }
+
+    setToday();
+
+    // ====================================
+    // 畫面共用函式
+    // ====================================
+
+    function showLookupStatus(
+      type,
+      message
+    ) {
+      lookupStatus.className =
+        `status ${type}`;
+
+      lookupStatus.textContent = message;
+    }
+
+    function clearLookupStatus() {
+      lookupStatus.className = "status";
+      lookupStatus.textContent = "";
+    }
+
+    function clearCustomerResults() {
+      customerResultList.innerHTML = "";
+      customerResultTitle.textContent = "";
+
+      customerResults.classList.remove(
+        "visible"
+      );
+    }
+
+    function resetSelectedCustomer() {
+      selectedCustomer = null;
+      customerMode = "unknown";
+
+      existingCustomerName.value = "";
+      existingTaxId.value = "";
+      existingPhone.value = "";
+
+      existingCustomerBox.classList.remove(
+        "visible"
+      );
+
+      newCustomerBox.classList.remove(
+        "visible"
+      );
+    }
+
+    function resetCustomerSection() {
+      resetSelectedCustomer();
+      clearCustomerResults();
+      clearLookupStatus();
+
+      customerSearchSection.style.display =
+        "block";
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // ====================================
+    // 顯示搜尋結果
+    // ====================================
+
+    function renderCustomerResults(
+      customers
+    ) {
+      customerResultList.innerHTML = "";
+
+      if (customers.length === 0) {
+        customerResultTitle.textContent =
+          "找不到符合的客戶。";
+
+        customerResults.classList.add(
+          "visible"
+        );
+
+        return;
+      }
+
+      customerResultTitle.textContent =
+        `找到 ${customers.length} 筆客戶，請選擇正確的公司：`;
+
+      customers.forEach(customer => {
+        const button =
+          document.createElement("button");
+
+        button.type = "button";
+        button.className = "customer-item";
+
+        const name =
+          escapeHtml(
+            customer.客戶名稱 || "未命名客戶"
+          );
+
+        const taxId =
+          escapeHtml(
+            customer.統一編號 || "未填寫"
+          );
+
+        const phone =
+          escapeHtml(
+            customer.電話 || "未填寫"
+          );
+
+        button.innerHTML =
+          `<div class="customer-item-name">` +
+          `${name}` +
+          `</div>` +
+          `<div class="customer-item-info">` +
+          `統一編號：${taxId}<br>` +
+          `電話：${phone}` +
+          `</div>`;
+
+        button.addEventListener(
+          "click",
+          () => {
+            selectExistingCustomer(
+              customer
+            );
+          }
+        );
+
+        customerResultList.appendChild(
+          button
+        );
+      });
+
+      customerResults.classList.add(
+        "visible"
+      );
+    }
+
+    // ====================================
+    // 選擇既有客戶
+    // ====================================
+
+    function selectExistingCustomer(
+      customer
+    ) {
+      selectedCustomer = customer;
+      customerMode = "existing";
+
+      existingCustomerName.value =
+        customer.客戶名稱 || "";
+
+      existingTaxId.value =
+        customer.統一編號 || "";
+
+      existingPhone.value =
+        customer.電話 || "";
+
+      existingCustomerBox.classList.add(
+        "visible"
+      );
+
+      newCustomerBox.classList.remove(
+        "visible"
+      );
+
+      customerSearchSection.style.display =
+        "none";
+
+      showLookupStatus(
+        "success",
+        "已選擇客戶主檔"
+      );
+    }
+
+    // ====================================
+    // 切換成建立新客戶
+    // ====================================
+
+    function showNewCustomerForm() {
+      customerMode = "new";
+      selectedCustomer = null;
+
+      existingCustomerBox.classList.remove(
+        "visible"
+      );
+
+      newCustomerBox.classList.add(
+        "visible"
+      );
+
+      /*
+        將使用者搜尋的關鍵字，
+        預先帶入客戶名稱欄位。
+      */
+
+      newCustomerName.value =
+        customerKeywordInput.value.trim();
+
+      newTaxId.value = "";
+      newPhone.value = "";
+
+      customerSearchSection.style.display =
+        "none";
+
+      newCustomerName.focus();
+    }
+
+    // ====================================
+    // 搜尋客戶
+    // ====================================
+
+    async function lookupCustomers() {
+      const keyword =
+        customerKeywordInput.value.trim();
+
+      if (!keyword) {
+        showLookupStatus(
+          "error",
+          "請先輸入客戶公司名稱"
+        );
+
+        customerKeywordInput.focus();
+        return;
+      }
+
+      if (keyword.length < 2) {
+        showLookupStatus(
+          "error",
+          "請至少輸入 2 個字再進行搜尋"
+        );
+
+        customerKeywordInput.focus();
+        return;
+      }
+
+      resetSelectedCustomer();
+      clearCustomerResults();
+
+      lookupButton.disabled = true;
+      lookupButton.textContent = "搜尋中...";
+
+      showLookupStatus(
+        "warning",
+        "正在搜尋 Kintone 客戶主檔"
+      );
+
+      try {
+        const response = await fetch(
+          "/api/customers?keyword=" +
+          encodeURIComponent(keyword)
+        );
+
+        const data = await response.json();
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+          throw new Error(
+            data.message || "搜尋失敗"
+          );
+        }
+
+        renderCustomerResults(
+          data.customers || []
+        );
+
+        if (data.found) {
+          showLookupStatus(
+            "success",
+            `已找到 ${data.count} 筆符合的客戶`
+          );
+        } else {
+          showLookupStatus(
+            "warning",
+            "查無符合的客戶，可以直接建立新客戶"
+          );
+        }
+      } catch (error) {
+        customerMode = "unknown";
+
+        showLookupStatus(
+          "error",
+          error.message
+        );
+      } finally {
+        lookupButton.disabled = false;
+        lookupButton.textContent =
+          "搜尋客戶";
+      }
+    }
+
+    // ====================================
+    // 搜尋相關事件
+    // ====================================
+
+    lookupButton.addEventListener(
+      "click",
+      lookupCustomers
     );
-  }
 
-  if (!woff.isInClient()) {
-    throw new Error(
-      "目前不是從 LINE WORKS App 的聊天室開啟，無法回傳訊息"
+    customerKeywordInput.addEventListener(
+      "keydown",
+      event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          lookupCustomers();
+        }
+      }
     );
-  }
 
-  const customerStatus =
-    customerCreated
-      ? "新客戶主檔已同步建立"
-      : "使用既有客戶主檔";
+    customerKeywordInput.addEventListener(
+      "input",
+      () => {
+        resetSelectedCustomer();
+        clearCustomerResults();
+        clearLookupStatus();
+      }
+    );
 
-const kintoneUrl =
-  `https://fxtw-seminar.cybozu.com/k/1350/show#record=${recordId}`;
+    createCustomerButton.addEventListener(
+      "click",
+      showNewCustomerForm
+    );
 
-const message =
+    changeExistingCustomerButton.addEventListener(
+      "click",
+      () => {
+        resetCustomerSection();
+        customerKeywordInput.focus();
+      }
+    );
+
+    cancelNewCustomerButton.addEventListener(
+      "click",
+      () => {
+        resetCustomerSection();
+        customerKeywordInput.focus();
+      }
+    );
+
+    // ====================================
+    // 回傳 LINE WORKS 訊息
+    // ====================================
+
+    async function sendSuccessMessage(
+      payload,
+      recordId,
+      customerCreated
+    ) {
+      try {
+        await woffInitPromise;
+      } catch (error) {
+        throw new Error(
+          "WOFF 初始化失敗：" +
+          (
+            error.message ||
+            error.code ||
+            "未知錯誤"
+          )
+        );
+      }
+
+      if (!woff.isInClient()) {
+        throw new Error(
+          "目前不是從 LINE WORKS App 的聊天室開啟，無法回傳訊息"
+        );
+      }
+
+      const kintoneUrl =
+        `https://fxtw-seminar.cybozu.com/k/1350/show#record=${recordId}`;
+
+      const message =
 `✅【拜訪紀錄回報完成】
 
 🏢 客戶名稱：${payload.客戶名稱}
@@ -439,360 +1149,137 @@ const message =
 
 ${customerCreated
   ? "🆕 已建立新客戶主檔"
-  : "📚 已使用既有客戶檔"}
-  
+  : "📚 已使用既有客戶主檔"}
+
 📂 Kintone 記錄編號｜${recordId}
 🔗 Kintone 紀錄：${kintoneUrl}
 
-🎉 感謝回報．辛苦了！　`;
+🎉 感謝回報．辛苦了！`;
 
-  await woff.sendMessage({
-    content: message
-  });
+      await woff.sendMessage({
+        content: message
+      });
 
-  console.log(
-    "WOFF message sent successfully:",
-    recordId
-  );
-
-  return true;
-}     
-    const taxIdInput =
-      document.getElementById("taxId");
-
-    const lookupButton =
-      document.getElementById("lookupButton");
-
-    const lookupStatus =
-      document.getElementById("lookupStatus");
-
-    const newCustomerBox =
-      document.getElementById("newCustomerBox");
-
-    const existingCustomerBox =
-      document.getElementById(
-        "existingCustomerBox"
+      console.log(
+        "WOFF message sent successfully:",
+        recordId
       );
 
-    const customerNameInput =
-      document.getElementById("customerName");
-
-    const phoneInput =
-      document.getElementById("phone");
-
-    const existingCustomerName =
-      document.getElementById(
-        "existingCustomerName"
-      );
-
-    const existingPhone =
-      document.getElementById(
-        "existingPhone"
-      );
-
-    const visitForm =
-      document.getElementById("visitForm");
-
-    const submitButton =
-      document.getElementById("submitButton");
-
-    const resultBox =
-      document.getElementById("result");
-
-    let customerLookupState = "unknown";
-const WOFF_ID = "vakcc3AB99cWKnhF7K1Jrw";
-
-let woffInitError = null;
-
-const woffInitPromise = new Promise(
-  (resolve, reject) => {
-    window.addEventListener(
-      "load",
-      async () => {
-        try {
-          if (typeof window.woff === "undefined") {
-            throw new Error(
-              "WOFF SDK 未載入，請檢查 SDK script URL"
-            );
-          }
-
-          console.log(
-            "WOFF SDK version:",
-            woff.getVersion()
-          );
-
-          await woff.init({
-            woffId: WOFF_ID
-          });
-
-          console.log(
-            "WOFF initialized successfully"
-          );
-
-          console.log(
-            "WOFF isInClient:",
-            woff.isInClient()
-          );
-
-          woffInitError = null;
-          resolve(true);
-
-        } catch (error) {
-          woffInitError = error;
-
-          console.error(
-            "WOFF initialization failed"
-          );
-
-          console.error(
-            "Code:",
-            error.code || "NO_CODE"
-          );
-
-          console.error(
-            "Message:",
-            error.message || error
-          );
-
-          reject(error);
-        }
-      },
-      {
-        once: true
-      }
-    );
-  }
-);
-
-/*
-  避免初始化失敗時出現
-  Unhandled Promise Rejection。
-*/
-woffInitPromise.catch(() => {});
-console.log("WOFF:", window.woff);
-  
-    document.getElementById("visitDate").value =
-      new Date().toLocaleDateString(
-        "sv-SE",
-        {
-          timeZone: "Asia/Taipei"
-        }
-      );
-
-    function showLookupStatus(type, message) {
-      lookupStatus.className =
-        `status ${type}`;
-
-      lookupStatus.textContent = message;
+      return true;
     }
 
-    function resetCustomerDisplay() {
-      customerLookupState = "unknown";
-
-      newCustomerBox.classList.remove(
-        "visible"
-      );
-
-      existingCustomerBox.classList.remove(
-        "visible"
-      );
-
-      customerNameInput.value = "";
-      phoneInput.value = "";
-
-      customerNameInput.readOnly = true;
-      phoneInput.readOnly = true;
-
-      existingCustomerName.value = "";
-      existingPhone.value = "";
-
-      lookupStatus.className = "status";
-      lookupStatus.textContent = "";
-    }
-
-    taxIdInput.addEventListener(
-      "input",
-      resetCustomerDisplay
-    );
-
-    async function lookupCustomer() {
-      const taxId =
-        taxIdInput.value.trim();
-
-      if (!taxId) {
-        showLookupStatus(
-          "error",
-          "請先輸入統一編號"
-        );
-
-        taxIdInput.focus();
-        return;
-      }
-
-      lookupButton.disabled = true;
-      lookupButton.textContent = "查詢中...";
-
-      showLookupStatus(
-        "warning",
-        "正在查詢客戶主檔"
-      );
-
-      try {
-        const response = await fetch(
-          `/api/customer?taxId=` +
-          encodeURIComponent(taxId)
-        );
-
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
-          throw new Error(
-            data.message || "查詢失敗"
-          );
-        }
-
-        if (data.found) {
-          customerLookupState = "existing";
-
-          existingCustomerName.value =
-            data.customer.客戶名稱 || "";
-
-          existingPhone.value =
-            data.customer.電話 || "";
-
-          customerNameInput.value =
-            data.customer.客戶名稱 || "";
-
-          phoneInput.value =
-            data.customer.電話 || "";
-
-          newCustomerBox.classList.remove(
-            "visible"
-          );
-
-          existingCustomerBox.classList.add(
-            "visible"
-          );
-
-          showLookupStatus(
-            "success",
-            "已找到客戶主檔"
-          );
-        } else {
-          customerLookupState = "new";
-
-          customerNameInput.readOnly = false;
-          phoneInput.readOnly = false;
-
-          existingCustomerBox.classList.remove(
-            "visible"
-          );
-
-          newCustomerBox.classList.add(
-            "visible"
-          );
-
-          showLookupStatus(
-            "warning",
-            "查無客戶，請補填客戶名稱與電話"
-          );
-
-          customerNameInput.focus();
-        }
-      } catch (error) {
-        customerLookupState = "unknown";
-
-        showLookupStatus(
-          "error",
-          error.message
-        );
-      } finally {
-        lookupButton.disabled = false;
-        lookupButton.textContent =
-          "查詢客戶";
-      }
-    }
-
-    lookupButton.addEventListener(
-      "click",
-      lookupCustomer
-    );
-
-    taxIdInput.addEventListener(
-      "keydown",
-      event => {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          lookupCustomer();
-        }
-      }
-    );
+    // ====================================
+    // 送出拜訪紀錄
+    // ====================================
 
     visitForm.addEventListener(
       "submit",
       async event => {
         event.preventDefault();
 
-        if (customerLookupState === "unknown") {
-          showLookupStatus(
-            "error",
-            "請先按「查詢客戶」"
+        if (customerMode === "unknown") {
+          alert(
+            "請先搜尋並選擇客戶，或建立新客戶"
           );
 
+          customerKeywordInput.focus();
           return;
         }
 
-        if (
-          customerLookupState === "new" &&
-          !customerNameInput.value.trim()
-        ) {
-          alert("新客戶請輸入客戶名稱");
-          customerNameInput.focus();
-          return;
+        let customerData;
+
+        if (customerMode === "existing") {
+          if (!selectedCustomer) {
+            alert("請重新選擇客戶");
+            return;
+          }
+
+          customerData = {
+            統一編號:
+              selectedCustomer.統一編號 || "",
+
+            客戶名稱:
+              selectedCustomer.客戶名稱 || "",
+
+            電話:
+              selectedCustomer.電話 || ""
+          };
+        } else {
+          const customerName =
+            newCustomerName.value.trim();
+
+          const taxId =
+            newTaxId.value.trim();
+
+          const phone =
+            newPhone.value.trim();
+
+          if (!customerName) {
+            alert(
+              "新客戶請輸入完整客戶名稱"
+            );
+
+            newCustomerName.focus();
+            return;
+          }
+
+          if (!taxId) {
+            alert(
+              "新客戶請輸入統一編號"
+            );
+
+            newTaxId.focus();
+            return;
+          }
+
+          customerData = {
+            統一編號: taxId,
+            客戶名稱: customerName,
+            電話: phone
+          };
         }
 
         const payload = {
+          customerMode,
+
           統一編號:
-            taxIdInput.value.trim(),
+            customerData.統一編號,
 
           客戶名稱:
-            customerNameInput.value.trim(),
+            customerData.客戶名稱,
 
           電話:
-            phoneInput.value.trim(),
+            customerData.電話,
 
           拜訪日期:
-            document
-              .getElementById("visitDate")
-              .value,
+            document.getElementById(
+              "visitDate"
+            ).value,
 
           拜訪對象:
-            document
-              .getElementById(
-                "contactPerson"
-              )
-              .value
-              .trim(),
+            document.getElementById(
+              "contactPerson"
+            ).value.trim(),
 
           拜訪內容:
-            document
-              .getElementById(
-                "visitContent"
-              )
-              .value
-              .trim(),
+            document.getElementById(
+              "visitContent"
+            ).value.trim(),
 
           下一步:
-            document
-              .getElementById("nextStep")
-              .value
-              .trim()
+            document.getElementById(
+              "nextStep"
+            ).value.trim()
         };
 
         submitButton.disabled = true;
-        submitButton.textContent = "送出中...";
+        submitButton.textContent =
+          "送出中...";
 
-        resultBox.classList.remove("visible");
+        resultBox.classList.remove(
+          "visible"
+        );
+
         resultBox.textContent = "";
 
         try {
@@ -808,79 +1295,102 @@ console.log("WOFF:", window.woff);
             }
           );
 
-          const data = await response.json();
+          const data =
+            await response.json();
 
-          if (!response.ok || !data.success) {
+          if (
+            !response.ok ||
+            !data.success
+          ) {
             throw new Error(
               data.message ||
               "建立拜訪紀錄失敗"
             );
           }
 
-const customerMessage =
-  data.customerCreated
-    ? "新客戶主檔已同步建立"
-    : "使用既有客戶主檔";
+          const finalPayload = {
+            ...payload,
+            統一編號:
+              data.customer.統一編號,
 
-let chatMessageSent = false;
-let chatMessageError = "";
+            客戶名稱:
+              data.customer.客戶名稱,
 
-try {
-  await sendSuccessMessage(
-    payload,
-    data.visitRecordId,
-    data.customerCreated
-  );
+            電話:
+              data.customer.電話
+          };
 
-  chatMessageSent = true;
+          const customerMessage =
+            data.customerCreated
+              ? "新客戶主檔已同步建立"
+              : "使用既有客戶主檔";
 
-} catch (messageError) {
-  chatMessageError =
-    messageError.message ||
-    "聊天室訊息傳送失敗";
+          let chatMessageSent = false;
+          let chatMessageError = "";
 
-  console.error(
-    "WOFF sendMessage failed:",
-    messageError
-  );
-}
+          try {
+            await sendSuccessMessage(
+              finalPayload,
+              data.visitRecordId,
+              data.customerCreated
+            );
 
-resultBox.innerHTML =
-  "<strong>拜訪紀錄建立成功</strong>" +
-  "<br>" +
-  customerMessage +
-  "<br>" +
-  "Kintone Record ID：" +
-  data.visitRecordId +
-  "<br>" +
-  (
-    chatMessageSent
-      ? "LINE WORKS 聊天室訊息已送出"
-      : "Kintone 已建立，但聊天室訊息未送出：" +
-        chatMessageError
-  );
+            chatMessageSent = true;
+          } catch (messageError) {
+            chatMessageError =
+              messageError.message ||
+              "聊天室訊息傳送失敗";
 
-resultBox.classList.add("visible");
+            console.error(
+              "WOFF sendMessage failed:",
+              messageError
+            );
+          }
+
+          resultBox.innerHTML =
+            "<strong>拜訪紀錄建立成功</strong>" +
+            "<br>" +
+            customerMessage +
+            "<br>" +
+            "客戶名稱：" +
+            escapeHtml(
+              data.customer.客戶名稱
+            ) +
+            "<br>" +
+            "Kintone Record ID：" +
+            escapeHtml(
+              data.visitRecordId
+            ) +
+            "<br>" +
+            (
+              chatMessageSent
+                ? "LINE WORKS 聊天室訊息已送出"
+                : "Kintone 已建立，但聊天室訊息未送出：" +
+                  escapeHtml(
+                    chatMessageError
+                  )
+            );
+
+          resultBox.classList.add(
+            "visible"
+          );
 
           visitForm.reset();
 
-          document.getElementById(
-            "visitDate"
-          ).value =
-            new Date().toLocaleDateString(
-              "sv-SE",
-              {
-                timeZone: "Asia/Taipei"
-              }
-            );
+          setToday();
 
-          resetCustomerDisplay();
+          customerKeywordInput.value = "";
+          newCustomerName.value = "";
+          newTaxId.value = "";
+          newPhone.value = "";
+
+          resetCustomerSection();
 
           window.scrollTo({
-            top: document.body.scrollHeight,
+            top:
+              document.body.scrollHeight,
             behavior: "smooth"
           });
-
         } catch (error) {
           alert(error.message);
         } finally {
