@@ -150,6 +150,18 @@ function validateEnvironment() {
 }
 
 // ========================================
+// 組合多個 API Token
+// ========================================
+
+function combineTokens(
+  ...tokens
+) {
+  return tokens
+    .filter(Boolean)
+    .join(",");
+}
+
+// ========================================
 // Kintone 共用呼叫
 // ========================================
 
@@ -278,12 +290,10 @@ function formatCustomerRecord(
       record.industry?.value || "",
 
     search_keywords:
-      record.search_keywords?.value ||
-      "",
+      record.search_keywords?.value || "",
 
     customer_status:
-      record.customer_status?.value ||
-      "",
+      record.customer_status?.value || "",
 
     company_note:
       record.company_note?.value || ""
@@ -360,16 +370,10 @@ async function searchCustomers(
     1. company_name
     2. search_keywords
 
-    範例：
-
-    FUJIFILM
-    → search_keywords 找到富士軟片
-
-    TSMC
-    → search_keywords 找到台積電
-
-    富士軟片
-    → company_name 或 search_keywords 找到
+    例如：
+    FUJIFILM → 富士軟片
+    TSMC → 台積電
+    富士 → 富士軟片
   */
 
   const query =
@@ -389,16 +393,24 @@ async function searchCustomers(
 
   const data =
     await callKintone({
-      token: CUSTOMER_TOKEN,
-      method: "GET",
+      token:
+        CUSTOMER_TOKEN,
+
+      method:
+        "GET",
+
       apiPath:
         "/k/v1/records.json",
-      queryParams: params
+
+      queryParams:
+        params
     });
 
   return (
     data.records || []
-  ).map(formatCustomerRecord);
+  ).map(
+    formatCustomerRecord
+  );
 }
 
 // ========================================
@@ -425,11 +437,17 @@ async function findCustomerById(
 
   const data =
     await callKintone({
-      token: CUSTOMER_TOKEN,
-      method: "GET",
+      token:
+        CUSTOMER_TOKEN,
+
+      method:
+        "GET",
+
       apiPath:
         "/k/v1/records.json",
-      queryParams: params
+
+      queryParams:
+        params
     });
 
   if (
@@ -493,8 +511,8 @@ async function createCustomer(
   };
 
   /*
-    WOFF 有傳客戶狀態才寫入。
-    沒傳則使用 kintone 預設值。
+    有傳入客戶狀態才寫入。
+    沒有則使用 Kintone 欄位預設值。
   */
 
   if (
@@ -507,13 +525,19 @@ async function createCustomer(
   }
 
   return await callKintone({
-    token: CUSTOMER_TOKEN,
-    method: "POST",
+    token:
+      CUSTOMER_TOKEN,
+
+    method:
+      "POST",
+
     apiPath:
       "/k/v1/record.json",
 
     body: {
-      app: CUSTOMER_APP_ID,
+      app:
+        CUSTOMER_APP_ID,
+
       record
     }
   });
@@ -544,16 +568,24 @@ async function searchContactsByCompanyId(
 
   const data =
     await callKintone({
-      token: CONTACT_TOKEN,
-      method: "GET",
+      token:
+        CONTACT_TOKEN,
+
+      method:
+        "GET",
+
       apiPath:
         "/k/v1/records.json",
-      queryParams: params
+
+      queryParams:
+        params
     });
 
   return (
     data.records || []
-  ).map(formatContactRecord);
+  ).map(
+    formatContactRecord
+  );
 }
 
 // ========================================
@@ -580,11 +612,17 @@ async function findContactById(
 
   const data =
     await callKintone({
-      token: CONTACT_TOKEN,
-      method: "GET",
+      token:
+        CONTACT_TOKEN,
+
+      method:
+        "GET",
+
       apiPath:
         "/k/v1/records.json",
-      queryParams: params
+
+      queryParams:
+        params
     });
 
   if (
@@ -658,11 +696,17 @@ async function generateNextContactId(
 
   const data =
     await callKintone({
-      token: CONTACT_TOKEN,
-      method: "GET",
+      token:
+        CONTACT_TOKEN,
+
+      method:
+        "GET",
+
       apiPath:
         "/k/v1/records.json",
-      queryParams: params
+
+      queryParams:
+        params
     });
 
   let maxSequence = 0;
@@ -720,7 +764,50 @@ async function generateNextContactId(
 }
 
 // ========================================
+// 判斷是否為 Contact ID 重複錯誤
+// ========================================
+
+function isDuplicateContactIdError(
+  error
+) {
+  const detailsText =
+    JSON.stringify(
+      error.details || {}
+    ).toLowerCase();
+
+  const messageText =
+    normalizeText(
+      error.message
+    ).toLowerCase();
+
+  return (
+    error.statusCode === 400 &&
+    (
+      detailsText.includes(
+        "contact_id"
+      ) ||
+      detailsText.includes(
+        "duplicate"
+      ) ||
+      detailsText.includes(
+        "重複"
+      ) ||
+      messageText.includes(
+        "contact_id"
+      ) ||
+      messageText.includes(
+        "duplicate"
+      ) ||
+      messageText.includes(
+        "重複"
+      )
+    )
+  );
+}
+
+// ========================================
 // 建立聯絡人
+// 1371 的 company_id 會 Lookup 1349
 // ========================================
 
 async function createContact(
@@ -730,7 +817,7 @@ async function createContact(
   let lastError = null;
 
   /*
-    若同一時間有兩個人新增同公司聯絡人，
+    若同一時間新增相同公司的聯絡人，
     有機會取得相同流水號。
 
     contact_id 已設定禁止重複值，
@@ -749,30 +836,43 @@ async function createContact(
 
     try {
       await callKintone({
-        token: `${CONTACT_TOKEN},${CUSTOMER_TOKEN}`,
-        method: "POST",
+        /*
+          CONTACT_TOKEN：
+          新增 1371 聯絡人。
+
+          CUSTOMER_TOKEN：
+          允許 company_id Lookup
+          讀取 1349 客戶資料。
+        */
+
+        token:
+          combineTokens(
+            CONTACT_TOKEN,
+            CUSTOMER_TOKEN
+          ),
+
+        method:
+          "POST",
+
         apiPath:
           "/k/v1/record.json",
 
         body: {
-          app: CONTACT_APP_ID,
+          app:
+            CONTACT_APP_ID,
 
           record: {
             contact_id: {
-              value: contactId
+              value:
+                contactId
             },
-
-            /*
-              1371 的 company_id 是 Lookup。
-              必須要求 kintone 執行 Lookup，
-              自動帶入 company_name 和 industry。
-            */
 
             company_id: {
               value:
                 customer.company_id,
 
-              lookup: true
+              lookup:
+                true
             },
 
             contact_name: {
@@ -848,26 +948,16 @@ async function createContact(
         error.details || ""
       );
 
-      const errorText =
-        JSON.stringify(
-          error.details || {}
-        );
+      /*
+        只有 Contact ID 重複時才重新產號。
+        Lookup、權限或欄位錯誤不重試。
+      */
 
-      const mayBeDuplicate =
-        error.statusCode === 400 &&
-        (
-          errorText.includes(
-            "contact_id"
-          ) ||
-          errorText.includes(
-            "重複"
-          ) ||
-          errorText
-            .toLowerCase()
-            .includes("duplicate")
-        );
-
-      if (!mayBeDuplicate) {
+      if (
+        !isDuplicateContactIdError(
+          error
+        )
+      ) {
         throw error;
       }
     }
@@ -883,7 +973,10 @@ async function createContact(
 
 // ========================================
 // 建立拜訪紀錄
-// 1350 採直接寫入，不執行 Lookup
+// 1350 使用兩個 Lookup
+//
+// company_id → Lookup 1349
+// contact_id → Lookup 1371
 // ========================================
 
 async function createVisit(
@@ -892,70 +985,36 @@ async function createVisit(
   visitData
 ) {
   const record = {
+    /*
+      從 1349 帶入：
+      company_name
+      company_phone
+    */
 
     company_id: {
-      value: customer.company_id,
-      lookup: true
+      value:
+        customer.company_id,
+
+      lookup:
+        true
     },
+
+    /*
+      從 1371 帶入：
+      contact_name
+      department
+      job_title
+      contact_email
+      contact_mobile
+    */
 
     contact_id: {
-      value: contact.contact_id,
-      lookup: true
-    },
-
-    visit_date: {
-      value: visitData.visit_date
-    },
-
-    visit_type: {
-      value: visitData.visit_type
-    },
-
-    visit_content: {
-      value: visitData.visit_content
-    },
-
-    next_step: {
-      value: visitData.next_step
-    }
-  };
-
-  if (
-    visitData.next_followup_date
-  ) {
-    record.next_followup_date = {
       value:
-        visitData.next_followup_date
-    };
-  }
+        contact.contact_id,
 
-  if (
-    visitData.sales_stage
-  ) {
-    record.sales_stage = {
-      value:
-        visitData.sales_stage
-    };
-  }
-
-  return await callKintone({
-    token:
-      `${VISIT_TOKEN},${CUSTOMER_TOKEN},${CONTACT_TOKEN}`,
-
-    method: "POST",
-
-    apiPath:
-      "/k/v1/record.json",
-
-    body: {
-      app: VISIT_APP_ID,
-      record
-    }
-  });
-}
-    // ------------------------------------
-    // 拜訪資料
-    // ------------------------------------
+      lookup:
+        true
+    },
 
     visit_date: {
       value:
@@ -979,8 +1038,7 @@ async function createVisit(
   };
 
   /*
-    選填欄位有值才送，
-    避免部分 kintone 欄位拒絕空字串。
+    選填欄位有值才寫入。
   */
 
   if (
@@ -1002,13 +1060,34 @@ async function createVisit(
   }
 
   return await callKintone({
-    token: VISIT_TOKEN,
-    method: "POST",
+    /*
+      VISIT_TOKEN：
+      新增 1350。
+
+      CUSTOMER_TOKEN：
+      company_id Lookup 讀取 1349。
+
+      CONTACT_TOKEN：
+      contact_id Lookup 讀取 1371。
+    */
+
+    token:
+      combineTokens(
+        VISIT_TOKEN,
+        CUSTOMER_TOKEN,
+        CONTACT_TOKEN
+      ),
+
+    method:
+      "POST",
+
     apiPath:
       "/k/v1/record.json",
 
     body: {
-      app: VISIT_APP_ID,
+      app:
+        VISIT_APP_ID,
+
       record
     }
   });
@@ -1188,11 +1267,7 @@ const server =
         const requestUrl =
           new URL(
             req.url,
-
-            `http://${
-              req.headers.host ||
-              "localhost"
-            }`
+            `http://${req.headers.host || "localhost"}`
           );
 
         // ----------------------------------
@@ -1245,7 +1320,8 @@ const server =
             res,
             200,
             {
-              status: "ok",
+              status:
+                "ok",
 
               apps: {
                 customer:
@@ -1258,9 +1334,23 @@ const server =
                   VISIT_APP_ID
               },
 
+              lookup: {
+                contactToCustomer:
+                  true,
+
+                visitToCustomer:
+                  true,
+
+                visitToContact:
+                  true
+              },
+
               customerSearch: {
-                companyName: true,
-                keywords: true
+                companyName:
+                  true,
+
+                keywords:
+                  true
               }
             }
           );
@@ -1273,7 +1363,7 @@ const server =
         //
         // GET /api/customers?keyword=TSMC
         // GET /api/customers?keyword=FUJIFILM
-        // GET /api/customers?keyword=台積電
+        // GET /api/customers?keyword=台積
         // ----------------------------------
 
         if (
@@ -1293,7 +1383,9 @@ const server =
               res,
               400,
               {
-                success: false,
+                success:
+                  false,
+
                 message:
                   "請輸入客戶公司名稱、英文名稱或關鍵字"
               }
@@ -1302,12 +1394,16 @@ const server =
             return;
           }
 
-          if (keyword.length < 2) {
+          if (
+            keyword.length < 2
+          ) {
             sendJson(
               res,
               400,
               {
-                success: false,
+                success:
+                  false,
+
                 message:
                   "請至少輸入 2 個字"
               }
@@ -1325,7 +1421,8 @@ const server =
             res,
             200,
             {
-              success: true,
+              success:
+                true,
 
               keyword,
 
@@ -1365,7 +1462,9 @@ const server =
               res,
               400,
               {
-                success: false,
+                success:
+                  false,
+
                 message:
                   "缺少統一編號"
               }
@@ -1384,7 +1483,9 @@ const server =
               res,
               404,
               {
-                success: false,
+                success:
+                  false,
+
                 message:
                   "找不到客戶資料"
               }
@@ -1402,7 +1503,8 @@ const server =
             res,
             200,
             {
-              success: true,
+              success:
+                true,
 
               customer,
 
@@ -1437,13 +1539,17 @@ const server =
 
           try {
             requestData =
-              JSON.parse(rawBody);
+              JSON.parse(
+                rawBody
+              );
           } catch (error) {
             sendJson(
               res,
               400,
               {
-                success: false,
+                success:
+                  false,
+
                 message:
                   "送出的資料格式不正確"
               }
@@ -1478,7 +1584,7 @@ const server =
             );
 
           // --------------------------------
-          // 檢查模式
+          // 檢查客戶與聯絡人模式
           // --------------------------------
 
           if (
@@ -1493,7 +1599,9 @@ const server =
               res,
               400,
               {
-                success: false,
+                success:
+                  false,
+
                 message:
                   "請選擇既有客戶或建立新客戶"
               }
@@ -1514,7 +1622,9 @@ const server =
               res,
               400,
               {
-                success: false,
+                success:
+                  false,
+
                 message:
                   "請選擇既有聯絡人或建立新聯絡人"
               }
@@ -1548,13 +1658,13 @@ const server =
               res,
               400,
               {
-                success: false,
+                success:
+                  false,
 
                 message:
                   "請填寫：" +
-                  missingVisitFields.join(
-                    "、"
-                  )
+                  missingVisitFields
+                    .join("、")
               }
             );
 
@@ -1580,7 +1690,9 @@ const server =
                 res,
                 400,
                 {
-                  success: false,
+                  success:
+                    false,
+
                   message:
                     "缺少既有客戶統一編號"
                 }
@@ -1599,7 +1711,9 @@ const server =
                 res,
                 404,
                 {
-                  success: false,
+                  success:
+                    false,
+
                   message:
                     "找不到所選擇的客戶，請重新搜尋"
                 }
@@ -1614,7 +1728,8 @@ const server =
           // --------------------------------
 
           if (
-            customerMode === "new"
+            customerMode ===
+            "new"
           ) {
             const missingCustomerFields =
               [
@@ -1636,7 +1751,8 @@ const server =
                 res,
                 400,
                 {
-                  success: false,
+                  success:
+                    false,
 
                   message:
                     "新客戶請填寫：" +
@@ -1660,7 +1776,8 @@ const server =
                 res,
                 409,
                 {
-                  success: false,
+                  success:
+                    false,
 
                   message:
                     "此統一編號已存在，請重新搜尋並選擇既有客戶"
@@ -1674,7 +1791,13 @@ const server =
               customerData
             );
 
-            customerCreated = true;
+            customerCreated =
+              true;
+
+            /*
+              新增後重新讀取 1349，
+              確認 Lookup 來源已經存在。
+            */
 
             customer =
               await findCustomerById(
@@ -1707,7 +1830,9 @@ const server =
                 res,
                 400,
                 {
-                  success: false,
+                  success:
+                    false,
+
                   message:
                     "缺少 Contact ID"
                 }
@@ -1726,7 +1851,9 @@ const server =
                 res,
                 404,
                 {
-                  success: false,
+                  success:
+                    false,
+
                   message:
                     "找不到所選擇的聯絡人，請重新選擇"
                 }
@@ -1743,7 +1870,9 @@ const server =
                 res,
                 400,
                 {
-                  success: false,
+                  success:
+                    false,
+
                   message:
                     "所選聯絡人不屬於目前客戶"
                 }
@@ -1758,7 +1887,8 @@ const server =
           // --------------------------------
 
           if (
-            contactMode === "new"
+            contactMode ===
+            "new"
           ) {
             if (
               !contactData.contact_name
@@ -1767,7 +1897,9 @@ const server =
                 res,
                 400,
                 {
-                  success: false,
+                  success:
+                    false,
+
                   message:
                     "新聯絡人請填寫姓名"
                 }
@@ -1782,7 +1914,8 @@ const server =
                 contactData
               );
 
-            contactCreated = true;
+            contactCreated =
+              true;
           }
 
           // --------------------------------
@@ -1800,7 +1933,8 @@ const server =
             res,
             200,
             {
-              success: true,
+              success:
+                true,
 
               message:
                 "拜訪紀錄建立成功",
@@ -1839,7 +1973,8 @@ const server =
           res,
           error.statusCode || 500,
           {
-            success: false,
+            success:
+              false,
 
             message:
               error.message ||
@@ -1881,6 +2016,10 @@ server.listen(
 
     console.log(
       "Customer search fields: company_name, search_keywords"
+    );
+
+    console.log(
+      "Lookup flow: 1349 -> 1371 -> 1350"
     );
   }
 );
