@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-
 <head>
   <meta charset="utf-8">
 
@@ -107,8 +106,7 @@
       outline: none;
       border-color: #1f6feb;
       box-shadow:
-        0 0 0 3px
-        rgba(31, 111, 235, 0.12);
+        0 0 0 3px rgba(31, 111, 235, 0.12);
     }
 
     textarea {
@@ -180,7 +178,6 @@
     }
 
     .result-item {
-      width: 100%;
       margin-bottom: 9px;
       padding: 13px;
       border: 1px solid #d8dee4;
@@ -218,16 +215,26 @@
       cursor: pointer;
     }
 
-    .selected-box {
+    .selected-box,
+    .form-box {
       display: none;
       margin-bottom: 18px;
       padding: 14px;
-      border: 1px solid #8cc9a0;
       border-radius: 10px;
+    }
+
+    .selected-box {
+      border: 1px solid #8cc9a0;
       background: #f0fff4;
     }
 
-    .selected-box.visible {
+    .form-box {
+      border: 1px solid #f0c36d;
+      background: #fffaf0;
+    }
+
+    .selected-box.visible,
+    .form-box.visible {
       display: block;
     }
 
@@ -237,29 +244,15 @@
       font-weight: 700;
     }
 
-    .selected-info {
-      color: #333;
-      font-size: 14px;
-      line-height: 1.8;
-    }
-
-    .form-box {
-      display: none;
-      margin-bottom: 18px;
-      padding: 14px;
-      border: 1px solid #f0c36d;
-      border-radius: 10px;
-      background: #fffaf0;
-    }
-
-    .form-box.visible {
-      display: block;
-    }
-
     .form-box-title {
       margin-bottom: 14px;
       color: #7a4e00;
       font-weight: 700;
+    }
+
+    .selected-info {
+      font-size: 14px;
+      line-height: 1.8;
     }
 
     .secondary-button {
@@ -333,7 +326,6 @@
 </head>
 
 <body>
-
   <div class="container">
     <div class="card">
 
@@ -346,11 +338,11 @@
 
       <form id="visitForm">
 
-        <!-- ===================================== -->
-        <!-- STEP 1 客戶 -->
-        <!-- ===================================== -->
+        <!-- ================================= -->
+        <!-- 1. 客戶 -->
+        <!-- ================================= -->
 
-        <div class="section">
+        <section class="section">
 
           <h2>1. 選擇客戶</h2>
 
@@ -495,8 +487,7 @@
               ></textarea>
 
               <div class="hint">
-                建議填寫英文名稱、品牌名稱及常用簡稱。
-                可使用換行或空格分隔。
+                建議填寫英文名稱、品牌名稱及常用簡稱，可使用換行或空格分隔。
               </div>
 
             </div>
@@ -591,6 +582,42 @@
 
             <div class="field">
 
+              <label for="newCustomerStatus">
+                客戶狀態
+                <span class="required">*</span>
+              </label>
+
+              <select id="newCustomerStatus">
+
+                <option value="">
+                  請選擇客戶狀態
+                </option>
+
+                <option
+                  value="潛在客戶"
+                  selected
+                >
+                  潛在客戶
+                </option>
+
+                <option value="洽談中">
+                  洽談中
+                </option>
+
+                <option value="既有客戶">
+                  既有客戶
+                </option>
+
+                <option value="停止追蹤">
+                  停止追蹤
+                </option>
+
+              </select>
+
+            </div>
+
+            <div class="field">
+
               <label for="newCompanyNote">
                 客戶備註
               </label>
@@ -612,13 +639,13 @@
 
           </div>
 
-        </div>
+        </section>
 
-        <!-- ===================================== -->
-        <!-- STEP 2 聯絡人 -->
-        <!-- ===================================== -->
+        <!-- ================================= -->
+        <!-- 2. 聯絡人 -->
+        <!-- ================================= -->
 
-        <div
+        <section
           id="contactSection"
           class="section hidden"
         >
@@ -651,6 +678,8 @@
             </button>
 
           </div>
+
+          <!-- 已選聯絡人 -->
 
           <div
             id="selectedContactBox"
@@ -688,6 +717,7 @@
             </div>
 
             <div class="field">
+
               <label for="newContactName">
                 姓名
                 <span class="required">*</span>
@@ -697,9 +727,11 @@
                 id="newContactName"
                 placeholder="請輸入聯絡人姓名"
               >
+
             </div>
 
             <div class="field">
+
               <label for="newDepartment">
                 部門
               </label>
@@ -708,9 +740,11 @@
                 id="newDepartment"
                 placeholder="例如：資訊部"
               >
+
             </div>
 
             <div class="field">
+
               <label for="newJobTitle">
                 職稱
               </label>
@@ -719,9 +753,11 @@
                 id="newJobTitle"
                 placeholder="例如：經理"
               >
+
             </div>
 
             <div class="field">
+
               <label for="newEmail">
                 Email
               </label>
@@ -732,9 +768,11 @@
                 inputmode="email"
                 placeholder="name@example.com"
               >
+
             </div>
 
             <div class="field">
+
               <label for="newMobile">
                 手機
               </label>
@@ -744,9 +782,11 @@
                 inputmode="tel"
                 placeholder="請輸入手機"
               >
+
             </div>
 
             <div class="field">
+
               <label for="newContactPhone">
                 公司電話
               </label>
@@ -756,9 +796,11 @@
                 inputmode="tel"
                 placeholder="請輸入公司電話"
               >
+
             </div>
 
             <div class="field">
+
               <label for="newExtension">
                 分機
               </label>
@@ -768,9 +810,11 @@
                 inputmode="numeric"
                 placeholder="請輸入分機"
               >
+
             </div>
 
             <div class="field">
+
               <label for="newContactNote">
                 備註
               </label>
@@ -779,6 +823,7 @@
                 id="newContactNote"
                 placeholder="可填寫其他聯絡人資訊"
               ></textarea>
+
             </div>
 
             <button
@@ -791,13 +836,13 @@
 
           </div>
 
-        </div>
+        </section>
 
-        <!-- ===================================== -->
-        <!-- STEP 3 拜訪 -->
-        <!-- ===================================== -->
+        <!-- ================================= -->
+        <!-- 3. 拜訪內容 -->
+        <!-- ================================= -->
 
-        <div
+        <section
           id="visitSection"
           class="section hidden"
         >
@@ -950,7 +995,7 @@
 
           </div>
 
-        </div>
+        </section>
 
         <button
           id="submitButton"
@@ -971,9 +1016,8 @@
   </div>
 
   <script>
-
     // ========================================
-    // WOFF
+    // WOFF 初始化
     // ========================================
 
     const WOFF_ID =
@@ -982,13 +1026,10 @@
     const woffInitPromise =
       new Promise(
         (resolve, reject) => {
-
           window.addEventListener(
             "load",
             async () => {
-
               try {
-
                 if (
                   typeof window.woff ===
                   "undefined"
@@ -1014,22 +1055,18 @@
                 resolve(true);
 
               } catch (error) {
-
                 console.error(
                   "WOFF initialization failed:",
                   error
                 );
 
                 reject(error);
-
               }
-
             },
             {
               once: true
             }
           );
-
         }
       );
 
@@ -1134,6 +1171,11 @@
     const newIndustry =
       document.getElementById(
         "newIndustry"
+      );
+
+    const newCustomerStatus =
+      document.getElementById(
+        "newCustomerStatus"
       );
 
     const newCompanyNote =
@@ -1257,7 +1299,7 @@
       );
 
     // ========================================
-    // STATE
+    // State
     // ========================================
 
     let customerMode =
@@ -1273,33 +1315,29 @@
       null;
 
     // ========================================
-    // 日期
+    // 預設日期
     // ========================================
 
     function setToday() {
-
       document.getElementById(
         "visitDate"
       ).value =
-        new Date()
-          .toLocaleDateString(
-            "sv-SE",
-            {
-              timeZone:
-                "Asia/Taipei"
-            }
-          );
-
+        new Date().toLocaleDateString(
+          "sv-SE",
+          {
+            timeZone:
+              "Asia/Taipei"
+          }
+        );
     }
 
     setToday();
 
     // ========================================
-    // COMMON
+    // 共用函式
     // ========================================
 
     function escapeHtml(value) {
-
       return String(
         value || ""
       )
@@ -1323,7 +1361,6 @@
           /'/g,
           "&#039;"
         );
-
     }
 
     function showStatus(
@@ -1331,28 +1368,22 @@
       type,
       message
     ) {
-
       element.className =
         `status ${type}`;
 
       element.textContent =
         message;
-
     }
 
     // ========================================
-    // SEARCH CUSTOMER
+    // 搜尋客戶
     // ========================================
 
     async function searchCustomers() {
-
       const keyword =
-        customerKeyword
-          .value
-          .trim();
+        customerKeyword.value.trim();
 
       if (!keyword) {
-
         showStatus(
           customerSearchStatus,
           "error",
@@ -1360,13 +1391,11 @@
         );
 
         return;
-
       }
 
       if (
         keyword.length < 2
       ) {
-
         showStatus(
           customerSearchStatus,
           "error",
@@ -1374,7 +1403,6 @@
         );
 
         return;
-
       }
 
       customerSearchButton.disabled =
@@ -1399,7 +1427,6 @@
       );
 
       try {
-
         const response =
           await fetch(
             "/api/customers?keyword=" +
@@ -1415,12 +1442,10 @@
           !response.ok ||
           !data.success
         ) {
-
           throw new Error(
             data.message ||
             "客戶搜尋失敗"
           );
-
         }
 
         renderCustomers(
@@ -1428,25 +1453,20 @@
         );
 
         if (data.found) {
-
           showStatus(
             customerSearchStatus,
             "success",
             `找到 ${data.count} 筆符合資料`
           );
-
         } else {
-
           showStatus(
             customerSearchStatus,
             "warning",
             "找不到符合的客戶，可以直接建立新客戶"
           );
-
         }
 
       } catch (error) {
-
         showStatus(
           customerSearchStatus,
           "error",
@@ -1454,38 +1474,31 @@
         );
 
       } finally {
-
         customerSearchButton.disabled =
           false;
 
         customerSearchButton.textContent =
           "搜尋客戶";
-
       }
-
     }
 
     // ========================================
-    // RENDER CUSTOMERS
+    // 顯示客戶結果
     // ========================================
 
     function renderCustomers(
       customers
     ) {
-
       customerResultList.innerHTML =
         "";
 
       customerResultTitle.textContent =
         customers.length
-          ?
-          `找到 ${customers.length} 筆客戶，請選擇：`
-          :
-          "找不到符合的客戶。";
+          ? `找到 ${customers.length} 筆客戶，請選擇：`
+          : "找不到符合的客戶。";
 
       customers.forEach(
         customer => {
-
           const button =
             document.createElement(
               "button"
@@ -1498,46 +1511,42 @@
             "result-item";
 
           button.innerHTML =
-
             `<div class="result-item-name">` +
-
             `${escapeHtml(
               customer.company_name
             )}` +
-
             `</div>` +
-
             `<div class="result-item-info">` +
-
             `統一編號：${escapeHtml(
               customer.company_id
             )}<br>` +
-
             `產業別：${escapeHtml(
               customer.industry ||
               "未設定"
             )}<br>` +
-
+            `客戶狀態：${escapeHtml(
+              customer.customer_status ||
+              "未設定"
+            )}<br>` +
             `公司電話：${escapeHtml(
               customer.company_phone ||
               "未填寫"
             )}` +
-
             `</div>`;
 
           button.addEventListener(
             "click",
-            () =>
+            () => {
               selectCustomer(
                 customer
-              )
+              );
+            }
           );
 
           customerResultList
             .appendChild(
               button
             );
-
         }
       );
 
@@ -1546,17 +1555,15 @@
         .add(
           "visible"
         );
-
     }
 
     // ========================================
-    // SELECT EXISTING CUSTOMER
+    // 選擇既有客戶
     // ========================================
 
     async function selectCustomer(
       customer
     ) {
-
       customerMode =
         "existing";
 
@@ -1564,20 +1571,20 @@
         customer;
 
       selectedCustomerInfo.innerHTML =
-
         `<strong>${escapeHtml(
           customer.company_name
         )}</strong><br>` +
-
         `統一編號：${escapeHtml(
           customer.company_id
         )}<br>` +
-
         `產業別：${escapeHtml(
           customer.industry ||
           "未設定"
         )}<br>` +
-
+        `客戶狀態：${escapeHtml(
+          customer.customer_status ||
+          "未設定"
+        )}<br>` +
         `公司電話：${escapeHtml(
           customer.company_phone ||
           "未填寫"
@@ -1610,15 +1617,13 @@
       await loadContacts(
         customer.company_id
       );
-
     }
 
     // ========================================
-    // NEW CUSTOMER
+    // 顯示新客戶表單
     // ========================================
 
     function showNewCustomer() {
-
       customerMode =
         "new";
 
@@ -1643,36 +1648,22 @@
           "visible"
         );
 
-      /*
-        如果搜尋的是中文正式名稱，
-        先帶到公司名稱。
-
-        若搜尋 FUJIFILM / TSMC，
-        則先帶到搜尋關鍵字比較合理。
-      */
-
       const searchedValue =
-        customerKeyword
-          .value
-          .trim();
+        customerKeyword.value.trim();
 
       if (
         /[\u3400-\u9FFF]/.test(
           searchedValue
         )
       ) {
-
         newCompanyName.value =
           searchedValue;
-
       } else {
-
         newCompanyName.value =
           "";
 
         newSearchKeywords.value =
           searchedValue;
-
       }
 
       contactSection
@@ -1682,17 +1673,15 @@
         );
 
       showNewContact();
-
     }
 
     // ========================================
-    // LOAD CONTACTS
+    // 查詢聯絡人
     // ========================================
 
     async function loadContacts(
       companyId
     ) {
-
       selectedContact =
         null;
 
@@ -1736,7 +1725,6 @@
       );
 
       try {
-
         const response =
           await fetch(
             "/api/contacts?companyId=" +
@@ -1752,12 +1740,10 @@
           !response.ok ||
           !data.success
         ) {
-
           throw new Error(
             data.message ||
             "聯絡人查詢失敗"
           );
-
         }
 
         renderContacts(
@@ -1765,56 +1751,45 @@
         );
 
         if (data.found) {
-
           showStatus(
             contactLoadingStatus,
             "success",
             `找到 ${data.count} 位聯絡人`
           );
-
         } else {
-
           showStatus(
             contactLoadingStatus,
             "warning",
             "此客戶目前沒有聯絡人"
           );
-
         }
 
       } catch (error) {
-
         showStatus(
           contactLoadingStatus,
           "error",
           error.message
         );
-
       }
-
     }
 
     // ========================================
-    // RENDER CONTACTS
+    // 顯示聯絡人結果
     // ========================================
 
     function renderContacts(
       contacts
     ) {
-
       contactResultList.innerHTML =
         "";
 
       contactResultTitle.textContent =
         contacts.length
-          ?
-          `找到 ${contacts.length} 位聯絡人，請選擇：`
-          :
-          "目前沒有聯絡人。";
+          ? `找到 ${contacts.length} 位聯絡人，請選擇：`
+          : "目前沒有聯絡人。";
 
       contacts.forEach(
         contact => {
-
           const button =
             document.createElement(
               "button"
@@ -1827,52 +1802,43 @@
             "result-item";
 
           button.innerHTML =
-
             `<div class="result-item-name">` +
-
             `${escapeHtml(
               contact.contact_name ||
               "未填寫姓名"
             )}` +
-
             `</div>` +
-
             `<div class="result-item-info">` +
-
             `部門：${escapeHtml(
               contact.department ||
               "未填寫"
             )}<br>` +
-
             `職稱：${escapeHtml(
               contact.job_title ||
               "未填寫"
             )}<br>` +
-
             `手機：${escapeHtml(
               contact.mobile ||
               "未填寫"
             )}<br>` +
-
             `Contact ID：${escapeHtml(
               contact.contact_id
             )}` +
-
             `</div>`;
 
           button.addEventListener(
             "click",
-            () =>
+            () => {
               selectContact(
                 contact
-              )
+              );
+            }
           );
 
           contactResultList
             .appendChild(
               button
             );
-
         }
       );
 
@@ -1881,17 +1847,15 @@
         .add(
           "visible"
         );
-
     }
 
     // ========================================
-    // SELECT CONTACT
+    // 選擇既有聯絡人
     // ========================================
 
     function selectContact(
       contact
     ) {
-
       contactMode =
         "existing";
 
@@ -1899,31 +1863,25 @@
         contact;
 
       selectedContactInfo.innerHTML =
-
         `<strong>${escapeHtml(
           contact.contact_name
         )}</strong><br>` +
-
         `部門：${escapeHtml(
           contact.department ||
           "未填寫"
         )}<br>` +
-
         `職稱：${escapeHtml(
           contact.job_title ||
           "未填寫"
         )}<br>` +
-
         `Email：${escapeHtml(
           contact.email ||
           "未填寫"
         )}<br>` +
-
         `手機：${escapeHtml(
           contact.mobile ||
           "未填寫"
         )}<br>` +
-
         `Contact ID：${escapeHtml(
           contact.contact_id
         )}`;
@@ -1947,15 +1905,13 @@
         );
 
       showVisit();
-
     }
 
     // ========================================
-    // NEW CONTACT
+    // 新聯絡人
     // ========================================
 
     function showNewContact() {
-
       contactMode =
         "new";
 
@@ -1982,23 +1938,17 @@
 
       if (
         selectedCustomer &&
-        selectedCustomer
-          .company_phone &&
+        selectedCustomer.company_phone &&
         !newContactPhone.value
       ) {
-
         newContactPhone.value =
-          selectedCustomer
-            .company_phone;
-
+          selectedCustomer.company_phone;
       }
 
       showVisit();
-
     }
 
     function showVisit() {
-
       visitSection
         .classList
         .remove(
@@ -2010,11 +1960,10 @@
         .remove(
           "hidden"
         );
-
     }
 
     // ========================================
-    // EVENTS
+    // Events
     // ========================================
 
     customerSearchButton
@@ -2027,19 +1976,12 @@
       .addEventListener(
         "keydown",
         event => {
-
           if (
-            event.key ===
-            "Enter"
+            event.key === "Enter"
           ) {
-
-            event
-              .preventDefault();
-
+            event.preventDefault();
             searchCustomers();
-
           }
-
         }
       );
 
@@ -2075,7 +2017,6 @@
       .addEventListener(
         "click",
         () => {
-
           selectedContact =
             null;
 
@@ -2103,14 +2044,10 @@
           if (
             selectedCustomer
           ) {
-
             loadContacts(
-              selectedCustomer
-                .company_id
+              selectedCustomer.company_id
             );
-
           }
-
         }
       );
 
@@ -2118,42 +2055,36 @@
       .addEventListener(
         "click",
         () => {
-
           if (
             customerMode ===
               "existing" &&
             selectedCustomer
           ) {
-
             loadContacts(
-              selectedCustomer
-                .company_id
+              selectedCustomer.company_id
             );
-
+          } else {
+            showNewContact();
           }
-
         }
       );
 
     // ========================================
-    // LINE WORKS MESSAGE
+    // LINE WORKS 回傳訊息
     // ========================================
 
     async function sendSuccessMessage(
       data,
       visitData
     ) {
-
       await woffInitPromise;
 
       if (
         !woff.isInClient()
       ) {
-
         throw new Error(
           "目前不是從 LINE WORKS App 聊天室開啟"
         );
-
       }
 
       const customer =
@@ -2174,6 +2105,7 @@
 🏢 客戶名稱：${customer.company_name}
 🆔 統一編號：${customer.company_id}
 🏭 產業別：${customer.industry || "未設定"}
+📊 客戶狀態：${customer.customer_status || "未設定"}
 
 👤 拜訪對象：${contact.contact_name}
 🏬 部門：${contact.department || "未填寫"}
@@ -2184,7 +2116,7 @@
 💬 拜訪內容：${visitData.visit_content}
 📝 下一步：${visitData.next_step}
 📆 下次追蹤日期：${visitData.next_followup_date || "未設定"}
-📊 案件階段：${visitData.sales_stage || "未設定"}
+📈 案件階段：${visitData.sales_stage || "未設定"}
 
 ${data.customerCreated
   ? "🆕 已建立新客戶主檔"
@@ -2202,445 +2134,332 @@ ${data.contactCreated
       await woff.sendMessage({
         content: message
       });
-
     }
 
     // ========================================
-    // SUBMIT
+    // 送出
     // ========================================
 
-    visitForm
-      .addEventListener(
-        "submit",
-        async event => {
+    visitForm.addEventListener(
+      "submit",
+      async event => {
+        event.preventDefault();
 
-          event.preventDefault();
+        if (
+          customerMode === "unknown"
+        ) {
+          alert(
+            "請先選擇或建立客戶"
+          );
 
-          if (
-            customerMode ===
-            "unknown"
-          ) {
+          return;
+        }
 
-            alert(
-              "請先選擇客戶"
-            );
+        if (
+          contactMode === "unknown"
+        ) {
+          alert(
+            "請先選擇或建立聯絡人"
+          );
 
-            return;
+          return;
+        }
 
-          }
+        let customerData;
 
-          if (
-            contactMode ===
-            "unknown"
-          ) {
-
-            alert(
-              "請先選擇聯絡人"
-            );
-
-            return;
-
-          }
-
-          // --------------------------
-          // CUSTOMER PAYLOAD
-          // --------------------------
-
-          let customerData;
-
-          if (
-            customerMode ===
-            "existing"
-          ) {
-
-            customerData = {
-              company_id:
-                selectedCustomer
-                  .company_id
-            };
-
-          } else {
-
-            if (
-              !newCompanyId
-                .value
-                .trim() ||
-              !newCompanyName
-                .value
-                .trim() ||
-              !newIndustry.value
-            ) {
-
-              alert(
-                "請完成新客戶必填資料"
-              );
-
-              return;
-
-            }
-
-            customerData = {
-
-              company_id:
-                newCompanyId
-                  .value
-                  .trim(),
-
-              company_name:
-                newCompanyName
-                  .value
-                  .trim(),
-
-              company_phone:
-                newCompanyPhone
-                  .value
-                  .trim(),
-
-              company_address:
-                newCompanyAddress
-                  .value
-                  .trim(),
-
-              industry:
-                newIndustry.value,
-
-              search_keywords:
-                newSearchKeywords
-                  .value
-                  .trim(),
-
-              company_note:
-                newCompanyNote
-                  .value
-                  .trim()
-
-            };
-
-          }
-
-          // --------------------------
-          // CONTACT PAYLOAD
-          // --------------------------
-
-          let contactData;
-
-          if (
-            contactMode ===
-            "existing"
-          ) {
-
-            contactData = {
-              contact_id:
-                selectedContact
-                  .contact_id
-            };
-
-          } else {
-
-            if (
-              !newContactName
-                .value
-                .trim()
-            ) {
-
-              alert(
-                "請輸入聯絡人姓名"
-              );
-
-              return;
-
-            }
-
-            contactData = {
-
-              contact_name:
-                newContactName
-                  .value
-                  .trim(),
-
-              department:
-                newDepartment
-                  .value
-                  .trim(),
-
-              job_title:
-                newJobTitle
-                  .value
-                  .trim(),
-
-              email:
-                newEmail
-                  .value
-                  .trim(),
-
-              mobile:
-                newMobile
-                  .value
-                  .trim(),
-
-              phone:
-                newContactPhone
-                  .value
-                  .trim(),
-
-              extension:
-                newExtension
-                  .value
-                  .trim(),
-
-              contact_note:
-                newContactNote
-                  .value
-                  .trim()
-
-            };
-
-          }
-
-          // --------------------------
-          // VISIT PAYLOAD
-          // --------------------------
-
-          const visitData = {
-
-            visit_date:
-              document
-                .getElementById(
-                  "visitDate"
-                )
-                .value,
-
-            visit_type:
-              document
-                .getElementById(
-                  "visitType"
-                )
-                .value,
-
-            visit_content:
-              document
-                .getElementById(
-                  "visitContent"
-                )
-                .value
-                .trim(),
-
-            next_step:
-              document
-                .getElementById(
-                  "nextStep"
-                )
-                .value
-                .trim(),
-
-            next_followup_date:
-              document
-                .getElementById(
-                  "nextFollowupDate"
-                )
-                .value,
-
-            sales_stage:
-              document
-                .getElementById(
-                  "salesStage"
-                )
-                .value
-
+        if (
+          customerMode === "existing"
+        ) {
+          customerData = {
+            company_id:
+              selectedCustomer.company_id
           };
 
+        } else {
           if (
-            !visitData.visit_date ||
-            !visitData.visit_type ||
-            !visitData.visit_content ||
-            !visitData.next_step
+            !newCompanyId.value.trim() ||
+            !newCompanyName.value.trim() ||
+            !newIndustry.value ||
+            !newCustomerStatus.value
           ) {
-
             alert(
-              "請完成拜訪資料必填欄位"
+              "請完成新客戶必填資料"
             );
 
             return;
-
           }
 
-          const payload = {
+          customerData = {
+            company_id:
+              newCompanyId.value.trim(),
 
-            customerMode,
-            contactMode,
+            company_name:
+              newCompanyName.value.trim(),
 
-            customer:
-              customerData,
+            search_keywords:
+              newSearchKeywords.value.trim(),
 
-            contact:
-              contactData,
+            company_phone:
+              newCompanyPhone.value.trim(),
 
-            visit:
+            company_address:
+              newCompanyAddress.value.trim(),
+
+            industry:
+              newIndustry.value,
+
+            customer_status:
+              newCustomerStatus.value,
+
+            company_note:
+              newCompanyNote.value.trim()
+          };
+        }
+
+        let contactData;
+
+        if (
+          contactMode === "existing"
+        ) {
+          contactData = {
+            contact_id:
+              selectedContact.contact_id
+          };
+
+        } else {
+          if (
+            !newContactName.value.trim()
+          ) {
+            alert(
+              "請輸入聯絡人姓名"
+            );
+
+            return;
+          }
+
+          contactData = {
+            contact_name:
+              newContactName.value.trim(),
+
+            department:
+              newDepartment.value.trim(),
+
+            job_title:
+              newJobTitle.value.trim(),
+
+            email:
+              newEmail.value.trim(),
+
+            mobile:
+              newMobile.value.trim(),
+
+            phone:
+              newContactPhone.value.trim(),
+
+            extension:
+              newExtension.value.trim(),
+
+            contact_note:
+              newContactNote.value.trim()
+          };
+        }
+
+        const visitData = {
+          visit_date:
+            document.getElementById(
+              "visitDate"
+            ).value,
+
+          visit_type:
+            document.getElementById(
+              "visitType"
+            ).value,
+
+          visit_content:
+            document.getElementById(
+              "visitContent"
+            ).value.trim(),
+
+          next_step:
+            document.getElementById(
+              "nextStep"
+            ).value.trim(),
+
+          next_followup_date:
+            document.getElementById(
+              "nextFollowupDate"
+            ).value,
+
+          sales_stage:
+            document.getElementById(
+              "salesStage"
+            ).value
+        };
+
+        if (
+          !visitData.visit_date ||
+          !visitData.visit_type ||
+          !visitData.visit_content ||
+          !visitData.next_step
+        ) {
+          alert(
+            "請完成拜訪資料必填欄位"
+          );
+
+          return;
+        }
+
+        const payload = {
+          customerMode,
+          contactMode,
+
+          customer:
+            customerData,
+
+          contact:
+            contactData,
+
+          visit:
+            visitData
+        };
+
+        submitButton.disabled =
+          true;
+
+        submitButton.textContent =
+          "送出中...";
+
+        finalResult
+          .classList
+          .remove(
+            "visible"
+          );
+
+        finalResult.innerHTML =
+          "";
+
+        try {
+          const response =
+            await fetch(
+              "/api/visit",
+              {
+                method:
+                  "POST",
+
+                headers: {
+                  "Content-Type":
+                    "application/json"
+                },
+
+                body:
+                  JSON.stringify(
+                    payload
+                  )
+              }
+            );
+
+          const data =
+            await response.json();
+
+          if (
+            !response.ok ||
+            !data.success
+          ) {
+            throw new Error(
+              data.message ||
+              "建立拜訪紀錄失敗"
+            );
+          }
+
+          let messageResult =
+            "LINE WORKS 聊天室訊息已送出";
+
+          try {
+            await sendSuccessMessage(
+              data,
               visitData
+            );
 
-          };
+          } catch (messageError) {
+            console.error(
+              "WOFF message failed:",
+              messageError
+            );
 
-          submitButton.disabled =
-            true;
+            messageResult =
+              "Kintone 已完成，但 LINE WORKS 訊息傳送失敗：" +
+              (
+                messageError.message ||
+                "未知錯誤"
+              );
+          }
 
-          submitButton.textContent =
-            "送出中...";
+          finalResult.innerHTML =
+            "<strong>✅ 拜訪紀錄建立成功</strong>" +
+            "<br><br>" +
+            "客戶：" +
+            escapeHtml(
+              data.customer.company_name
+            ) +
+            "<br>" +
+            "客戶狀態：" +
+            escapeHtml(
+              data.customer.customer_status ||
+              "未設定"
+            ) +
+            "<br>" +
+            "聯絡人：" +
+            escapeHtml(
+              data.contact.contact_name
+            ) +
+            "<br>" +
+            "Contact ID：" +
+            escapeHtml(
+              data.contact.contact_id
+            ) +
+            "<br>" +
+            "Kintone Record ID：" +
+            escapeHtml(
+              data.visitRecordId
+            ) +
+            "<br><br>" +
+            escapeHtml(
+              messageResult
+            );
 
           finalResult
             .classList
-            .remove(
+            .add(
               "visible"
             );
 
-          finalResult.innerHTML =
-            "";
+          window.scrollTo({
+            top:
+              document.body.scrollHeight,
 
-          try {
+            behavior:
+              "smooth"
+          });
 
-            const response =
-              await fetch(
-                "/api/visit",
-                {
-                  method:
-                    "POST",
+        } catch (error) {
+          console.error(
+            "Submit failed:",
+            error
+          );
 
-                  headers: {
-                    "Content-Type":
-                      "application/json"
-                  },
+          alert(
+            error.message
+          );
 
-                  body:
-                    JSON.stringify(
-                      payload
-                    )
-                }
-              );
+        } finally {
+          submitButton.disabled =
+            false;
 
-            const data =
-              await response.json();
-
-            if (
-              !response.ok ||
-              !data.success
-            ) {
-
-              throw new Error(
-                data.message ||
-                "建立拜訪紀錄失敗"
-              );
-
-            }
-
-            let messageResult =
-              "LINE WORKS 聊天室訊息已送出";
-
-            try {
-
-              await sendSuccessMessage(
-                data,
-                visitData
-              );
-
-            } catch (
-              messageError
-            ) {
-
-              console.error(
-                "WOFF message failed:",
-                messageError
-              );
-
-              messageResult =
-                "Kintone 已完成，但 LINE WORKS 訊息傳送失敗：" +
-                (
-                  messageError.message ||
-                  "未知錯誤"
-                );
-
-            }
-
-            finalResult.innerHTML =
-
-              "<strong>✅ 拜訪紀錄建立成功</strong>" +
-
-              "<br><br>" +
-
-              "客戶：" +
-              escapeHtml(
-                data.customer
-                  .company_name
-              ) +
-
-              "<br>" +
-
-              "聯絡人：" +
-              escapeHtml(
-                data.contact
-                  .contact_name
-              ) +
-
-              "<br>" +
-
-              "Contact ID：" +
-              escapeHtml(
-                data.contact
-                  .contact_id
-              ) +
-
-              "<br>" +
-
-              "Kintone Record ID：" +
-              escapeHtml(
-                data.visitRecordId
-              ) +
-
-              "<br><br>" +
-
-              escapeHtml(
-                messageResult
-              );
-
-            finalResult
-              .classList
-              .add(
-                "visible"
-              );
-
-            window.scrollTo({
-              top:
-                document.body
-                  .scrollHeight,
-
-              behavior:
-                "smooth"
-            });
-
-          } catch (error) {
-
-            console.error(
-              "Submit failed:",
-              error
-            );
-
-            alert(
-              error.message
-            );
-
-          } finally {
-
-            submitButton.disabled =
-              false;
-
-            submitButton.textContent =
-              "送出拜訪紀錄";
-
-          }
-
+          submitButton.textContent =
+            "送出拜訪紀錄";
         }
-      );
-
+      }
+    );
   </script>
-
 </body>
-
 </html>
