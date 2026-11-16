@@ -99,16 +99,25 @@ function readBody(req) {
     (resolve, reject) => {
       let body = "";
 
-      req.on("data", chunk => {
-        body +=
-          chunk.toString("utf8");
-      });
+      req.on(
+        "data",
+        chunk => {
+          body +=
+            chunk.toString("utf8");
+        }
+      );
 
-      req.on("end", () => {
-        resolve(body);
-      });
+      req.on(
+        "end",
+        () => {
+          resolve(body);
+        }
+      );
 
-      req.on("error", reject);
+      req.on(
+        "error",
+        reject
+      );
     }
   );
 }
@@ -139,9 +148,13 @@ function validateEnvironment() {
       .filter(
         ([, value]) => !value
       )
-      .map(([key]) => key);
+      .map(
+        ([key]) => key
+      );
 
-  if (missing.length > 0) {
+  if (
+    missing.length > 0
+  ) {
     throw new Error(
       "缺少 Environment Variable：" +
       missing.join("、")
@@ -150,7 +163,7 @@ function validateEnvironment() {
 }
 
 // ========================================
-// 組合多個 API Token
+// 組合多個 Kintone API Token
 // ========================================
 
 function combineTokens(
@@ -194,7 +207,8 @@ async function callKintone({
   if (body) {
     options.headers[
       "Content-Type"
-    ] = "application/json";
+    ] =
+      "application/json";
 
     options.body =
       JSON.stringify(body);
@@ -216,6 +230,7 @@ async function callKintone({
       rawText
         ? JSON.parse(rawText)
         : {};
+
   } catch (error) {
     data = {
       message:
@@ -225,15 +240,17 @@ async function callKintone({
   }
 
   if (!response.ok) {
-    const error = new Error(
-      data.message ||
-      "Kintone API 執行失敗"
-    );
+    const error =
+      new Error(
+        data.message ||
+        "Kintone API 執行失敗"
+      );
 
     error.statusCode =
       response.status;
 
-    error.details = data;
+    error.details =
+      data;
 
     throw error;
   }
@@ -249,15 +266,23 @@ function escapeKintoneQueryValue(
   value
 ) {
   return String(value)
-    .replace(/\\/g, "\\\\")
-    .replace(/"/g, '\\"');
+    .replace(
+      /\\/g,
+      "\\\\"
+    )
+    .replace(
+      /"/g,
+      '\\"'
+    );
 }
 
 // ========================================
 // 正規化文字
 // ========================================
 
-function normalizeText(value) {
+function normalizeText(
+  value
+) {
   return String(
     value || ""
   ).trim();
@@ -272,31 +297,40 @@ function formatCustomerRecord(
 ) {
   return {
     recordId:
-      record.$id?.value || "",
+      record.$id?.value ||
+      "",
 
     company_id:
-      record.company_id?.value || "",
+      record.company_id?.value ||
+      "",
 
     company_name:
-      record.company_name?.value || "",
+      record.company_name?.value ||
+      "",
 
     company_phone:
-      record.company_phone?.value || "",
+      record.company_phone?.value ||
+      "",
 
     company_address:
-      record.company_address?.value || "",
+      record.company_address?.value ||
+      "",
 
     industry:
-      record.industry?.value || "",
+      record.industry?.value ||
+      "",
 
     search_keywords:
-      record.search_keywords?.value || "",
+      record.search_keywords?.value ||
+      "",
 
     customer_status:
-      record.customer_status?.value || "",
+      record.customer_status?.value ||
+      "",
 
     company_note:
-      record.company_note?.value || ""
+      record.company_note?.value ||
+      ""
   };
 }
 
@@ -309,51 +343,65 @@ function formatContactRecord(
 ) {
   return {
     recordId:
-      record.$id?.value || "",
+      record.$id?.value ||
+      "",
 
     contact_id:
-      record.contact_id?.value || "",
+      record.contact_id?.value ||
+      "",
 
     company_id:
-      record.company_id?.value || "",
+      record.company_id?.value ||
+      "",
 
     company_name:
-      record.company_name?.value || "",
+      record.company_name?.value ||
+      "",
 
     industry:
-      record.industry?.value || "",
+      record.industry?.value ||
+      "",
 
     contact_name:
-      record.contact_name?.value || "",
+      record.contact_name?.value ||
+      "",
 
     department:
-      record.department?.value || "",
+      record.department?.value ||
+      "",
 
     job_title:
-      record.job_title?.value || "",
+      record.job_title?.value ||
+      "",
 
     email:
-      record.email?.value || "",
+      record.email?.value ||
+      "",
 
     mobile:
-      record.mobile?.value || "",
+      record.mobile?.value ||
+      "",
 
     phone:
-      record.phone?.value || "",
+      record.phone?.value ||
+      "",
 
     extension:
-      record.extension?.value || "",
+      record.extension?.value ||
+      "",
 
     contact_status:
-      record.contact_status?.value || "",
+      record.contact_status?.value ||
+      "",
 
     contact_note:
-      record.contact_note?.value || ""
+      record.contact_note?.value ||
+      ""
   };
 }
 
 // ========================================
-// 依公司名稱或關鍵字模糊搜尋客戶
+// 公司名稱／搜尋關鍵字模糊搜尋
 // ========================================
 
 async function searchCustomers(
@@ -371,6 +419,7 @@ async function searchCustomers(
     2. search_keywords
 
     例如：
+
     FUJIFILM → 富士軟片
     TSMC → 台積電
     富士 → 富士軟片
@@ -387,7 +436,9 @@ async function searchCustomers(
 
   const params =
     new URLSearchParams({
-      app: CUSTOMER_APP_ID,
+      app:
+        CUSTOMER_APP_ID,
+
       query
     });
 
@@ -431,7 +482,9 @@ async function findCustomerById(
 
   const params =
     new URLSearchParams({
-      app: CUSTOMER_APP_ID,
+      app:
+        CUSTOMER_APP_ID,
+
       query
     });
 
@@ -463,7 +516,7 @@ async function findCustomerById(
 }
 
 // ========================================
-// 建立客戶
+// 建立客戶 1349
 // ========================================
 
 async function createCustomer(
@@ -503,26 +556,17 @@ async function createCustomer(
         ""
     },
 
+    customer_status: {
+      value:
+        customerData.customer_status
+    },
+
     company_note: {
       value:
         customerData.company_note ||
         ""
     }
   };
-
-  /*
-    有傳入客戶狀態才寫入。
-    沒有則使用 Kintone 欄位預設值。
-  */
-
-  if (
-    customerData.customer_status
-  ) {
-    record.customer_status = {
-      value:
-        customerData.customer_status
-    };
-  }
 
   return await callKintone({
     token:
@@ -562,7 +606,9 @@ async function searchContactsByCompanyId(
 
   const params =
     new URLSearchParams({
-      app: CONTACT_APP_ID,
+      app:
+        CONTACT_APP_ID,
+
       query
     });
 
@@ -606,7 +652,9 @@ async function findContactById(
 
   const params =
     new URLSearchParams({
-      app: CONTACT_APP_ID,
+      app:
+        CONTACT_APP_ID,
+
       query
     });
 
@@ -690,7 +738,9 @@ async function generateNextContactId(
 
   const params =
     new URLSearchParams({
-      app: CONTACT_APP_ID,
+      app:
+        CONTACT_APP_ID,
+
       query
     });
 
@@ -734,7 +784,9 @@ async function generateNextContactId(
       );
 
     const sequenceNumber =
-      Number(sequenceText);
+      Number(
+        sequenceText
+      );
 
     if (
       Number.isInteger(
@@ -764,7 +816,7 @@ async function generateNextContactId(
 }
 
 // ========================================
-// 判斷是否為 Contact ID 重複錯誤
+// 判斷 Contact ID 重複錯誤
 // ========================================
 
 function isDuplicateContactIdError(
@@ -806,22 +858,24 @@ function isDuplicateContactIdError(
 }
 
 // ========================================
-// 建立聯絡人
-// 1371 的 company_id 會 Lookup 1349
+// 建立聯絡人 1371
+//
+// company_id Lookup 1349
 // ========================================
 
 async function createContact(
   customer,
   contactData
 ) {
-  let lastError = null;
+  let lastError =
+    null;
 
   /*
-    若同一時間新增相同公司的聯絡人，
-    有機會取得相同流水號。
+    若同時建立相同公司的聯絡人，
+    可能產生同一流水號。
 
     contact_id 已設定禁止重複值，
-    因此最多重試 3 次。
+    所以最多重試 3 次。
   */
 
   for (
@@ -838,11 +892,11 @@ async function createContact(
       await callKintone({
         /*
           CONTACT_TOKEN：
-          新增 1371 聯絡人。
+          新增 1371。
 
           CUSTOMER_TOKEN：
-          允許 company_id Lookup
-          讀取 1349 客戶資料。
+          讓 company_id Lookup
+          可以讀取 1349。
         */
 
         token:
@@ -940,7 +994,8 @@ async function createContact(
       return createdContact;
 
     } catch (error) {
-      lastError = error;
+      lastError =
+        error;
 
       console.error(
         `Create contact attempt ${attempt} failed:`,
@@ -949,8 +1004,11 @@ async function createContact(
       );
 
       /*
-        只有 Contact ID 重複時才重新產號。
-        Lookup、權限或欄位錯誤不重試。
+        只有重複 Contact ID
+        才重新產號並重試。
+
+        欄位、Lookup 或權限錯誤
+        不進行無效重試。
       */
 
       if (
@@ -972,11 +1030,10 @@ async function createContact(
 }
 
 // ========================================
-// 建立拜訪紀錄
-// 1350 使用兩個 Lookup
+// 建立拜訪紀錄 1350
 //
-// company_id → Lookup 1349
-// contact_id → Lookup 1371
+// company_id Lookup 1349
+// contact_id Lookup 1371
 // ========================================
 
 async function createVisit(
@@ -987,6 +1044,7 @@ async function createVisit(
   const record = {
     /*
       從 1349 帶入：
+
       company_name
       company_phone
     */
@@ -1001,6 +1059,7 @@ async function createVisit(
 
     /*
       從 1371 帶入：
+
       contact_name
       department
       job_title
@@ -1267,6 +1326,7 @@ const server =
         const requestUrl =
           new URL(
             req.url,
+
             `http://${req.headers.host || "localhost"}`
           );
 
@@ -1351,6 +1411,18 @@ const server =
 
                 keywords:
                   true
+              },
+
+              customerStatus: {
+                enabled:
+                  true,
+
+                options: [
+                  "潛在客戶",
+                  "洽談中",
+                  "既有客戶",
+                  "停止追蹤"
+                ]
               }
             }
           );
@@ -1542,6 +1614,7 @@ const server =
               JSON.parse(
                 rawBody
               );
+
           } catch (error) {
             sendJson(
               res,
@@ -1735,7 +1808,8 @@ const server =
               [
                 "company_id",
                 "company_name",
-                "industry"
+                "industry",
+                "customer_status"
               ].filter(
                 fieldName =>
                   !customerData[
@@ -1758,6 +1832,34 @@ const server =
                     "新客戶請填寫：" +
                     missingCustomerFields
                       .join("、")
+                }
+              );
+
+              return;
+            }
+
+            const allowedCustomerStatuses =
+              [
+                "潛在客戶",
+                "洽談中",
+                "既有客戶",
+                "停止追蹤"
+              ];
+
+            if (
+              !allowedCustomerStatuses.includes(
+                customerData.customer_status
+              )
+            ) {
+              sendJson(
+                res,
+                400,
+                {
+                  success:
+                    false,
+
+                  message:
+                    "客戶狀態選項不正確"
                 }
               );
 
@@ -1795,8 +1897,9 @@ const server =
               true;
 
             /*
-              新增後重新讀取 1349，
-              確認 Lookup 來源已經存在。
+              建立客戶後重新讀取，
+              確認 1349 Lookup Data Source
+              已經可以找到資料。
             */
 
             customer =
@@ -1993,7 +2096,8 @@ const server =
 // ========================================
 
 const port =
-  process.env.PORT || 3000;
+  process.env.PORT ||
+  3000;
 
 server.listen(
   port,
@@ -2016,6 +2120,10 @@ server.listen(
 
     console.log(
       "Customer search fields: company_name, search_keywords"
+    );
+
+    console.log(
+      "Customer status field: customer_status"
     );
 
     console.log(
