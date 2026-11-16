@@ -830,31 +830,66 @@ async function createVisit(
   visitData
 ) {
   const record = {
-    /*
-      1350 的 company_id 與
-      contact_id 都是 Lookup。
-    */
+
+    // =====================================
+    // 客戶資料
+    // =====================================
 
     company_id: {
-      value:
-        customer.company_id,
-      lookup: true
+      value: customer.company_id
     },
+
+    company_name: {
+      value: customer.company_name
+    },
+
+    company_phone: {
+      value:
+        customer.company_phone || ""
+    },
+
+    // =====================================
+    // 聯絡人資料
+    // =====================================
 
     contact_id: {
-      value:
-        contact.contact_id,
-      lookup: true
+      value: contact.contact_id
     },
 
-    visit_date: {
+    contact_name: {
+      value: contact.contact_name
+    },
+
+    department: {
       value:
-        visitData.visit_date
+        contact.department || ""
+    },
+
+    job_title: {
+      value:
+        contact.job_title || ""
+    },
+
+    contact_email: {
+      value:
+        contact.email || ""
+    },
+
+    contact_mobile: {
+      value:
+        contact.mobile || ""
+    },
+
+    // =====================================
+    // 拜訪資料
+    // =====================================
+
+    visit_date: {
+      value: visitData.visit_date
     },
 
     visit_type: {
-      value:
-        visitData.visit_type
+      value: visitData.visit_type
     },
 
     visit_content: {
@@ -868,6 +903,8 @@ async function createVisit(
     }
   };
 
+  // 下次追蹤日期有填才寫入
+
   if (
     visitData.next_followup_date
   ) {
@@ -877,7 +914,11 @@ async function createVisit(
     };
   }
 
-  if (visitData.sales_stage) {
+  // 案件階段有填才寫入
+
+  if (
+    visitData.sales_stage
+  ) {
     record.sales_stage = {
       value:
         visitData.sales_stage
@@ -887,8 +928,7 @@ async function createVisit(
   return await callKintone({
     token: VISIT_TOKEN,
     method: "POST",
-    apiPath:
-      "/k/v1/record.json",
+    apiPath: "/k/v1/record.json",
 
     body: {
       app: VISIT_APP_ID,
@@ -896,7 +936,6 @@ async function createVisit(
     }
   });
 }
-
 // ========================================
 // 正規化資料
 // ========================================
