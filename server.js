@@ -2,6 +2,10 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
+// ========================================
+// Environment Variables
+// ========================================
+
 const DOMAIN =
   process.env.KINTONE_DOMAIN;
 
@@ -55,11 +59,18 @@ function sendJson(
 ) {
   res.writeHead(statusCode, {
     "Content-Type":
-      "application/json; charset=utf-8"
+      "application/json; charset=utf-8",
+
+    "Cache-Control":
+      "no-store"
   });
 
   res.end(
-    JSON.stringify(data, null, 2)
+    JSON.stringify(
+      data,
+      null,
+      2
+    )
   );
 }
 
@@ -70,7 +81,10 @@ function sendText(
 ) {
   res.writeHead(statusCode, {
     "Content-Type":
-      "text/plain; charset=utf-8"
+      "text/plain; charset=utf-8",
+
+    "Cache-Control":
+      "no-store"
   });
 
   res.end(text);
@@ -86,7 +100,8 @@ function readBody(req) {
       let body = "";
 
       req.on("data", chunk => {
-        body += chunk.toString("utf8");
+        body +=
+          chunk.toString("utf8");
       });
 
       req.on("end", () => {
@@ -99,12 +114,13 @@ function readBody(req) {
 }
 
 // ========================================
-// 檢查環境變數
+// 檢查 Environment Variables
 // ========================================
 
 function validateEnvironment() {
   const requiredVariables = {
-    KINTONE_DOMAIN: DOMAIN,
+    KINTONE_DOMAIN:
+      DOMAIN,
 
     KINTONE_CUSTOMER_API_TOKEN:
       CUSTOMER_TOKEN,
@@ -117,7 +133,9 @@ function validateEnvironment() {
   };
 
   const missing =
-    Object.entries(requiredVariables)
+    Object.entries(
+      requiredVariables
+    )
       .filter(
         ([, value]) => !value
       )
@@ -125,9 +143,8 @@ function validateEnvironment() {
 
   if (missing.length > 0) {
     throw new Error(
-      `缺少 Environment Variable：${missing.join(
-        "、"
-      )}`
+      "缺少 Environment Variable：" +
+      missing.join("、")
     );
   }
 }
@@ -155,6 +172,7 @@ async function callKintone({
 
   const options = {
     method,
+
     headers: {
       "X-Cybozu-API-Token":
         token
@@ -171,7 +189,10 @@ async function callKintone({
   }
 
   const response =
-    await fetch(url, options);
+    await fetch(
+      url,
+      options
+    );
 
   const rawText =
     await response.text();
@@ -209,7 +230,7 @@ async function callKintone({
 }
 
 // ========================================
-// 避免 Query 特殊字元問題
+// 避免 Kintone Query 特殊字元問題
 // ========================================
 
 function escapeKintoneQueryValue(
@@ -218,6 +239,16 @@ function escapeKintoneQueryValue(
   return String(value)
     .replace(/\\/g, "\\\\")
     .replace(/"/g, '\\"');
+}
+
+// ========================================
+// 正規化文字
+// ========================================
+
+function normalizeText(value) {
+  return String(
+    value || ""
+  ).trim();
 }
 
 // ========================================
@@ -246,8 +277,13 @@ function formatCustomerRecord(
     industry:
       record.industry?.value || "",
 
+    search_keywords:
+      record.search_keywords?.value ||
+      "",
+
     customer_status:
-      record.customer_status?.value || "",
+      record.customer_status?.value ||
+      "",
 
     company_note:
       record.company_note?.value || ""
@@ -307,10 +343,10 @@ function formatContactRecord(
 }
 
 // ========================================
-// 依公司名稱模糊搜尋客戶
+// 依公司名稱或關鍵字模糊搜尋客戶
 // ========================================
 
-async function searchCustomersByName(
+async function searchCustomers(
   keyword
 ) {
   const safeKeyword =
@@ -318,8 +354,30 @@ async function searchCustomersByName(
       keyword
     );
 
+  /*
+    同時搜尋：
+
+    1. company_name
+    2. search_keywords
+
+    範例：
+
+    FUJIFILM
+    → search_keywords 找到富士軟片
+
+    TSMC
+    → search_keywords 找到台積電
+
+    富士軟片
+    → company_name 或 search_keywords 找到
+  */
+
   const query =
+    `(` +
     `company_name like "${safeKeyword}" ` +
+    `or ` +
+    `search_keywords like "${safeKeyword}"` +
+    `) ` +
     `order by company_name asc ` +
     `limit 20`;
 
@@ -344,7 +402,7 @@ async function searchCustomersByName(
 }
 
 // ========================================
-// 依統編查詢客戶
+// 依統一編號查詢客戶
 // ========================================
 
 async function findCustomerById(
@@ -421,6 +479,12 @@ async function createCustomer(
         customerData.industry
     },
 
+    search_keywords: {
+      value:
+        customerData.search_keywords ||
+        ""
+    },
+
     company_note: {
       value:
         customerData.company_note ||
@@ -429,10 +493,8 @@ async function createCustomer(
   };
 
   /*
-    若 WOFF 有傳入客戶狀態，
-    才寫入 customer_status。
-    如果沒有，就使用 kintone
-    欄位原本的預設值。
+    WOFF 有傳客戶狀態才寫入。
+    沒傳則使用 kintone 預設值。
   */
 
   if (
@@ -458,7 +520,7 @@ async function createCustomer(
 }
 
 // ========================================
-// 查詢公司聯絡人
+// 查詢公司旗下聯絡人
 // ========================================
 
 async function searchContactsByCompanyId(
@@ -545,14 +607,14 @@ async function generateNextContactId(
   customer
 ) {
   const companyId =
-    String(
-      customer.company_id || ""
-    ).trim();
+    normalizeText(
+      customer.company_id
+    );
 
   const industry =
-    String(
-      customer.industry || ""
-    ).trim();
+    normalizeText(
+      customer.industry
+    );
 
   if (!companyId) {
     throw new Error(
@@ -610,9 +672,8 @@ async function generateNextContactId(
     data.records || []
   ) {
     const contactId =
-      String(
-        record.contact_id?.value ||
-        ""
+      normalizeText(
+        record.contact_id?.value
       );
 
     if (
@@ -646,7 +707,10 @@ async function generateNextContactId(
   const nextSequence =
     String(
       maxSequence + 1
-    ).padStart(3, "0");
+    ).padStart(
+      3,
+      "0"
+    );
 
   return (
     `${industryCode}-` +
@@ -663,15 +727,15 @@ async function createContact(
   customer,
   contactData
 ) {
-  /*
-    若剛好同時有人建立相同公司的
-    聯絡人，可能取得相同流水號。
-
-    因為 contact_id 已設定禁止重複，
-    所以這裡最多重新嘗試 3 次。
-  */
-
   let lastError = null;
+
+  /*
+    若同一時間有兩個人新增同公司聯絡人，
+    有機會取得相同流水號。
+
+    contact_id 已設定禁止重複值，
+    因此最多重試 3 次。
+  */
 
   for (
     let attempt = 1;
@@ -699,14 +763,15 @@ async function createContact(
             },
 
             /*
-              lookup: true 會要求
-              kintone 依 company_id
-              自動更新客戶名稱與產業別。
+              1371 的 company_id 是 Lookup。
+              必須要求 kintone 執行 Lookup，
+              自動帶入 company_name 和 industry。
             */
 
             company_id: {
               value:
                 customer.company_id,
+
               lookup: true
             },
 
@@ -773,6 +838,7 @@ async function createContact(
       }
 
       return createdContact;
+
     } catch (error) {
       lastError = error;
 
@@ -781,11 +847,6 @@ async function createContact(
         error.message,
         error.details || ""
       );
-
-      /*
-        只有可能為 Contact ID
-        重複時才重試。
-      */
 
       const errorText =
         JSON.stringify(
@@ -801,9 +862,9 @@ async function createContact(
           errorText.includes(
             "重複"
           ) ||
-          errorText.includes(
-            "duplicate"
-          )
+          errorText
+            .toLowerCase()
+            .includes("duplicate")
         );
 
       if (!mayBeDuplicate) {
@@ -822,6 +883,7 @@ async function createContact(
 
 // ========================================
 // 建立拜訪紀錄
+// 1350 採直接寫入，不執行 Lookup
 // ========================================
 
 async function createVisit(
@@ -830,66 +892,76 @@ async function createVisit(
   visitData
 ) {
   const record = {
-
-    // =====================================
-    // 客戶資料
-    // =====================================
+    // ------------------------------------
+    // 客戶資料快照
+    // ------------------------------------
 
     company_id: {
-      value: customer.company_id
+      value:
+        customer.company_id
     },
 
     company_name: {
-      value: customer.company_name
+      value:
+        customer.company_name
     },
 
     company_phone: {
       value:
-        customer.company_phone || ""
+        customer.company_phone ||
+        ""
     },
 
-    // =====================================
-    // 聯絡人資料
-    // =====================================
+    // ------------------------------------
+    // 聯絡人資料快照
+    // ------------------------------------
 
     contact_id: {
-      value: contact.contact_id
+      value:
+        contact.contact_id
     },
 
     contact_name: {
-      value: contact.contact_name
+      value:
+        contact.contact_name
     },
 
     department: {
       value:
-        contact.department || ""
+        contact.department ||
+        ""
     },
 
     job_title: {
       value:
-        contact.job_title || ""
+        contact.job_title ||
+        ""
     },
 
     contact_email: {
       value:
-        contact.email || ""
+        contact.email ||
+        ""
     },
 
     contact_mobile: {
       value:
-        contact.mobile || ""
+        contact.mobile ||
+        ""
     },
 
-    // =====================================
+    // ------------------------------------
     // 拜訪資料
-    // =====================================
+    // ------------------------------------
 
     visit_date: {
-      value: visitData.visit_date
+      value:
+        visitData.visit_date
     },
 
     visit_type: {
-      value: visitData.visit_type
+      value:
+        visitData.visit_type
     },
 
     visit_content: {
@@ -903,7 +975,10 @@ async function createVisit(
     }
   };
 
-  // 下次追蹤日期有填才寫入
+  /*
+    選填欄位有值才送，
+    避免部分 kintone 欄位拒絕空字串。
+  */
 
   if (
     visitData.next_followup_date
@@ -913,8 +988,6 @@ async function createVisit(
         visitData.next_followup_date
     };
   }
-
-  // 案件階段有填才寫入
 
   if (
     visitData.sales_stage
@@ -928,7 +1001,8 @@ async function createVisit(
   return await callKintone({
     token: VISIT_TOKEN,
     method: "POST",
-    apiPath: "/k/v1/record.json",
+    apiPath:
+      "/k/v1/record.json",
 
     body: {
       app: VISIT_APP_ID,
@@ -936,21 +1010,17 @@ async function createVisit(
     }
   });
 }
-// ========================================
-// 正規化資料
-// ========================================
 
-function normalizeText(value) {
-  return String(
-    value || ""
-  ).trim();
-}
+// ========================================
+// 正規化客戶資料
+// ========================================
 
 function normalizeCustomerData(
   value
 ) {
   const source =
-    value && typeof value === "object"
+    value &&
+    typeof value === "object"
       ? value
       : {};
 
@@ -980,6 +1050,11 @@ function normalizeCustomerData(
         source.industry
       ),
 
+    search_keywords:
+      normalizeText(
+        source.search_keywords
+      ),
+
     customer_status:
       normalizeText(
         source.customer_status
@@ -992,11 +1067,16 @@ function normalizeCustomerData(
   };
 }
 
+// ========================================
+// 正規化聯絡人資料
+// ========================================
+
 function normalizeContactData(
   value
 ) {
   const source =
-    value && typeof value === "object"
+    value &&
+    typeof value === "object"
       ? value
       : {};
 
@@ -1048,11 +1128,16 @@ function normalizeContactData(
   };
 }
 
+// ========================================
+// 正規化拜訪資料
+// ========================================
+
 function normalizeVisitData(
   value
 ) {
   const source =
-    value && typeof value === "object"
+    value &&
+    typeof value === "object"
       ? value
       : {};
 
@@ -1100,15 +1185,16 @@ const server =
         const requestUrl =
           new URL(
             req.url,
+
             `http://${
               req.headers.host ||
               "localhost"
             }`
           );
 
-        // ------------------------------
-        // 顯示 WOFF
-        // ------------------------------
+        // ----------------------------------
+        // 顯示 WOFF 表單
+        // ----------------------------------
 
         if (
           req.method === "GET" &&
@@ -1126,18 +1212,24 @@ const server =
               "utf8"
             );
 
-          res.writeHead(200, {
-            "Content-Type":
-              "text/html; charset=utf-8"
-          });
+          res.writeHead(
+            200,
+            {
+              "Content-Type":
+                "text/html; charset=utf-8",
+
+              "Cache-Control":
+                "no-store"
+            }
+          );
 
           res.end(html);
           return;
         }
 
-        // ------------------------------
+        // ----------------------------------
         // 健康檢查
-        // ------------------------------
+        // ----------------------------------
 
         if (
           req.method === "GET" &&
@@ -1146,28 +1238,40 @@ const server =
         ) {
           validateEnvironment();
 
-          sendJson(res, 200, {
-            status: "ok",
+          sendJson(
+            res,
+            200,
+            {
+              status: "ok",
 
-            apps: {
-              customer:
-                CUSTOMER_APP_ID,
+              apps: {
+                customer:
+                  CUSTOMER_APP_ID,
 
-              contact:
-                CONTACT_APP_ID,
+                contact:
+                  CONTACT_APP_ID,
 
-              visit:
-                VISIT_APP_ID
+                visit:
+                  VISIT_APP_ID
+              },
+
+              customerSearch: {
+                companyName: true,
+                keywords: true
+              }
             }
-          });
+          );
 
           return;
         }
 
-        // ------------------------------
-        // 模糊搜尋客戶
-        // GET /api/customers?keyword=富士
-        // ------------------------------
+        // ----------------------------------
+        // 搜尋客戶
+        //
+        // GET /api/customers?keyword=TSMC
+        // GET /api/customers?keyword=FUJIFILM
+        // GET /api/customers?keyword=台積電
+        // ----------------------------------
 
         if (
           req.method === "GET" &&
@@ -1182,48 +1286,64 @@ const server =
             );
 
           if (!keyword) {
-            sendJson(res, 400, {
-              success: false,
-              message:
-                "請輸入客戶公司名稱"
-            });
+            sendJson(
+              res,
+              400,
+              {
+                success: false,
+                message:
+                  "請輸入客戶公司名稱、英文名稱或關鍵字"
+              }
+            );
 
             return;
           }
 
-          if (
-            keyword.length < 2
-          ) {
-            sendJson(res, 400, {
-              success: false,
-              message:
-                "請至少輸入 2 個字"
-            });
+          if (keyword.length < 2) {
+            sendJson(
+              res,
+              400,
+              {
+                success: false,
+                message:
+                  "請至少輸入 2 個字"
+              }
+            );
 
             return;
           }
 
           const customers =
-            await searchCustomersByName(
+            await searchCustomers(
               keyword
             );
 
-          sendJson(res, 200, {
-            success: true,
-            found:
-              customers.length > 0,
-            count:
-              customers.length,
-            customers
-          });
+          sendJson(
+            res,
+            200,
+            {
+              success: true,
+
+              keyword,
+
+              found:
+                customers.length > 0,
+
+              count:
+                customers.length,
+
+              customers
+            }
+          );
 
           return;
         }
 
-        // ------------------------------
-        // 查詢公司聯絡人
-        // GET /api/contacts?companyId=...
-        // ------------------------------
+        // ----------------------------------
+        // 查詢公司旗下聯絡人
+        //
+        // GET /api/contacts?companyId=03550014
+        // ----------------------------------
 
         if (
           req.method === "GET" &&
@@ -1238,11 +1358,15 @@ const server =
             );
 
           if (!companyId) {
-            sendJson(res, 400, {
-              success: false,
-              message:
-                "缺少統一編號"
-            });
+            sendJson(
+              res,
+              400,
+              {
+                success: false,
+                message:
+                  "缺少統一編號"
+              }
+            );
 
             return;
           }
@@ -1253,11 +1377,15 @@ const server =
             );
 
           if (!customer) {
-            sendJson(res, 404, {
-              success: false,
-              message:
-                "找不到客戶資料"
-            });
+            sendJson(
+              res,
+              404,
+              {
+                success: false,
+                message:
+                  "找不到客戶資料"
+              }
+            );
 
             return;
           }
@@ -1267,23 +1395,32 @@ const server =
               companyId
             );
 
-          sendJson(res, 200, {
-            success: true,
-            customer,
-            found:
-              contacts.length > 0,
-            count:
-              contacts.length,
-            contacts
-          });
+          sendJson(
+            res,
+            200,
+            {
+              success: true,
+
+              customer,
+
+              found:
+                contacts.length > 0,
+
+              count:
+                contacts.length,
+
+              contacts
+            }
+          );
 
           return;
         }
 
-        // ------------------------------
+        // ----------------------------------
         // 建立拜訪紀錄
+        //
         // POST /api/visit
-        // ------------------------------
+        // ----------------------------------
 
         if (
           req.method === "POST" &&
@@ -1299,11 +1436,15 @@ const server =
             requestData =
               JSON.parse(rawBody);
           } catch (error) {
-            sendJson(res, 400, {
-              success: false,
-              message:
-                "送出的資料格式不正確"
-            });
+            sendJson(
+              res,
+              400,
+              {
+                success: false,
+                message:
+                  "送出的資料格式不正確"
+              }
+            );
 
             return;
           }
@@ -1333,6 +1474,10 @@ const server =
               requestData.visit
             );
 
+          // --------------------------------
+          // 檢查模式
+          // --------------------------------
+
           if (
             ![
               "existing",
@@ -1341,11 +1486,15 @@ const server =
               customerMode
             )
           ) {
-            sendJson(res, 400, {
-              success: false,
-              message:
-                "請選擇既有客戶或建立新客戶"
-            });
+            sendJson(
+              res,
+              400,
+              {
+                success: false,
+                message:
+                  "請選擇既有客戶或建立新客戶"
+              }
+            );
 
             return;
           }
@@ -1358,14 +1507,22 @@ const server =
               contactMode
             )
           ) {
-            sendJson(res, 400, {
-              success: false,
-              message:
-                "請選擇既有聯絡人或建立新聯絡人"
-            });
+            sendJson(
+              res,
+              400,
+              {
+                success: false,
+                message:
+                  "請選擇既有聯絡人或建立新聯絡人"
+              }
+            );
 
             return;
           }
+
+          // --------------------------------
+          // 檢查拜訪必填欄位
+          // --------------------------------
 
           const missingVisitFields =
             [
@@ -1384,13 +1541,19 @@ const server =
             missingVisitFields.length >
             0
           ) {
-            sendJson(res, 400, {
-              success: false,
-              message:
-                `請填寫：${missingVisitFields.join(
-                  "、"
-                )}`
-            });
+            sendJson(
+              res,
+              400,
+              {
+                success: false,
+
+                message:
+                  "請填寫：" +
+                  missingVisitFields.join(
+                    "、"
+                  )
+              }
+            );
 
             return;
           }
@@ -1399,9 +1562,9 @@ const server =
           let customerCreated =
             false;
 
-          // --------------------------
+          // --------------------------------
           // 既有客戶
-          // --------------------------
+          // --------------------------------
 
           if (
             customerMode ===
@@ -1410,11 +1573,15 @@ const server =
             if (
               !customerData.company_id
             ) {
-              sendJson(res, 400, {
-                success: false,
-                message:
-                  "缺少既有客戶統一編號"
-              });
+              sendJson(
+                res,
+                400,
+                {
+                  success: false,
+                  message:
+                    "缺少既有客戶統一編號"
+                }
+              );
 
               return;
             }
@@ -1425,19 +1592,23 @@ const server =
               );
 
             if (!customer) {
-              sendJson(res, 404, {
-                success: false,
-                message:
-                  "找不到所選擇的客戶，請重新搜尋"
-              });
+              sendJson(
+                res,
+                404,
+                {
+                  success: false,
+                  message:
+                    "找不到所選擇的客戶，請重新搜尋"
+                }
+              );
 
               return;
             }
           }
 
-          // --------------------------
+          // --------------------------------
           // 新客戶
-          // --------------------------
+          // --------------------------------
 
           if (
             customerMode === "new"
@@ -1458,13 +1629,18 @@ const server =
               missingCustomerFields
                 .length > 0
             ) {
-              sendJson(res, 400, {
-                success: false,
-                message:
-                  `新客戶請填寫：${missingCustomerFields.join(
-                    "、"
-                  )}`
-              });
+              sendJson(
+                res,
+                400,
+                {
+                  success: false,
+
+                  message:
+                    "新客戶請填寫：" +
+                    missingCustomerFields
+                      .join("、")
+                }
+              );
 
               return;
             }
@@ -1477,11 +1653,16 @@ const server =
             if (
               existingCustomer
             ) {
-              sendJson(res, 409, {
-                success: false,
-                message:
-                  "此統一編號已存在，請重新搜尋並選擇既有客戶"
-              });
+              sendJson(
+                res,
+                409,
+                {
+                  success: false,
+
+                  message:
+                    "此統一編號已存在，請重新搜尋並選擇既有客戶"
+                }
+              );
 
               return;
             }
@@ -1508,9 +1689,9 @@ const server =
           let contactCreated =
             false;
 
-          // --------------------------
+          // --------------------------------
           // 既有聯絡人
-          // --------------------------
+          // --------------------------------
 
           if (
             contactMode ===
@@ -1519,11 +1700,15 @@ const server =
             if (
               !contactData.contact_id
             ) {
-              sendJson(res, 400, {
-                success: false,
-                message:
-                  "缺少 Contact ID"
-              });
+              sendJson(
+                res,
+                400,
+                {
+                  success: false,
+                  message:
+                    "缺少 Contact ID"
+                }
+              );
 
               return;
             }
@@ -1534,11 +1719,15 @@ const server =
               );
 
             if (!contact) {
-              sendJson(res, 404, {
-                success: false,
-                message:
-                  "找不到所選擇的聯絡人，請重新選擇"
-              });
+              sendJson(
+                res,
+                404,
+                {
+                  success: false,
+                  message:
+                    "找不到所選擇的聯絡人，請重新選擇"
+                }
+              );
 
               return;
             }
@@ -1547,19 +1736,23 @@ const server =
               contact.company_id !==
               customer.company_id
             ) {
-              sendJson(res, 400, {
-                success: false,
-                message:
-                  "所選聯絡人不屬於目前客戶"
-              });
+              sendJson(
+                res,
+                400,
+                {
+                  success: false,
+                  message:
+                    "所選聯絡人不屬於目前客戶"
+                }
+              );
 
               return;
             }
           }
 
-          // --------------------------
+          // --------------------------------
           // 新聯絡人
-          // --------------------------
+          // --------------------------------
 
           if (
             contactMode === "new"
@@ -1567,11 +1760,15 @@ const server =
             if (
               !contactData.contact_name
             ) {
-              sendJson(res, 400, {
-                success: false,
-                message:
-                  "新聯絡人請填寫姓名"
-              });
+              sendJson(
+                res,
+                400,
+                {
+                  success: false,
+                  message:
+                    "新聯絡人請填寫姓名"
+                }
+              );
 
               return;
             }
@@ -1585,9 +1782,9 @@ const server =
             contactCreated = true;
           }
 
-          // --------------------------
-          // 建立拜訪紀錄
-          // --------------------------
+          // --------------------------------
+          // 建立 1350 拜訪紀錄
+          // --------------------------------
 
           const visitResult =
             await createVisit(
@@ -1596,23 +1793,28 @@ const server =
               visitData
             );
 
-          sendJson(res, 200, {
-            success: true,
-            message:
-              "拜訪紀錄建立成功",
+          sendJson(
+            res,
+            200,
+            {
+              success: true,
 
-            customerCreated,
-            contactCreated,
+              message:
+                "拜訪紀錄建立成功",
 
-            customer,
-            contact,
+              customerCreated,
+              contactCreated,
 
-            visitRecordId:
-              visitResult.id,
+              customer,
+              contact,
 
-            revision:
-              visitResult.revision
-          });
+              visitRecordId:
+                visitResult.id,
+
+              revision:
+                visitResult.revision
+            }
+          );
 
           return;
         }
@@ -1635,6 +1837,7 @@ const server =
           error.statusCode || 500,
           {
             success: false,
+
             message:
               error.message ||
               "系統發生錯誤",
@@ -1654,20 +1857,27 @@ const server =
 const port =
   process.env.PORT || 3000;
 
-server.listen(port, () => {
-  console.log(
-    `Server running on port ${port}`
-  );
+server.listen(
+  port,
+  () => {
+    console.log(
+      `Server running on port ${port}`
+    );
 
-  console.log(
-    `Customer App: ${CUSTOMER_APP_ID}`
-  );
+    console.log(
+      `Customer App: ${CUSTOMER_APP_ID}`
+    );
 
-  console.log(
-    `Contact App: ${CONTACT_APP_ID}`
-  );
+    console.log(
+      `Contact App: ${CONTACT_APP_ID}`
+    );
 
-  console.log(
-    `Visit App: ${VISIT_APP_ID}`
-  );
-});
+    console.log(
+      `Visit App: ${VISIT_APP_ID}`
+    );
+
+    console.log(
+      "Customer search fields: company_name, search_keywords"
+    );
+  }
+);
