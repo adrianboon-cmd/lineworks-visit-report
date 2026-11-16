@@ -30,6 +30,11 @@ const VISIT_APP_ID =
 const VISIT_TOKEN =
   process.env.KINTONE_VISIT_API_TOKEN;
 
+// LINE WORKS WOFF ID
+// 從 Render Environment 取得
+const WOFF_ID =
+  process.env.LINEWORKS_WOFF_ID;
+
 // ========================================
 // 產業別代碼
 // ========================================
@@ -47,6 +52,17 @@ const INDUSTRY_CODES = {
   政教機關: "GOV",
   資訊業: "IT"
 };
+
+// ========================================
+// 客戶狀態
+// ========================================
+
+const CUSTOMER_STATUSES = [
+  "潛在客戶",
+  "洽談中",
+  "既有客戶",
+  "停止追蹤"
+];
 
 // ========================================
 // 共用回應函式
@@ -123,7 +139,7 @@ function readBody(req) {
 }
 
 // ========================================
-// 檢查 Environment Variables
+// Environment Variables 檢查
 // ========================================
 
 function validateEnvironment() {
@@ -138,7 +154,10 @@ function validateEnvironment() {
       CONTACT_TOKEN,
 
     KINTONE_VISIT_API_TOKEN:
-      VISIT_TOKEN
+      VISIT_TOKEN,
+
+    LINEWORKS_WOFF_ID:
+      WOFF_ID
   };
 
   const missing =
@@ -163,7 +182,7 @@ function validateEnvironment() {
 }
 
 // ========================================
-// 組合多個 Kintone API Token
+// 組合 Kintone API Tokens
 // ========================================
 
 function combineTokens(
@@ -259,7 +278,7 @@ async function callKintone({
 }
 
 // ========================================
-// 避免 Kintone Query 特殊字元問題
+// Kintone Query Escape
 // ========================================
 
 function escapeKintoneQueryValue(
@@ -401,7 +420,7 @@ function formatContactRecord(
 }
 
 // ========================================
-// 公司名稱／搜尋關鍵字模糊搜尋
+// 公司名稱 / 搜尋關鍵字模糊搜尋
 // ========================================
 
 async function searchCustomers(
@@ -411,19 +430,6 @@ async function searchCustomers(
     escapeKintoneQueryValue(
       keyword
     );
-
-  /*
-    同時搜尋：
-
-    1. company_name
-    2. search_keywords
-
-    例如：
-
-    FUJIFILM → 富士軟片
-    TSMC → 台積電
-    富士 → 富士軟片
-  */
 
   const query =
     `(` +
@@ -465,7 +471,7 @@ async function searchCustomers(
 }
 
 // ========================================
-// 依統一編號查詢客戶
+// 依統編查詢客戶
 // ========================================
 
 async function findCustomerById(
@@ -686,7 +692,7 @@ async function findContactById(
 }
 
 // ========================================
-// 產生下一個 Contact ID
+// 自動產生 Contact ID
 // ========================================
 
 async function generateNextContactId(
@@ -715,7 +721,9 @@ async function generateNextContactId(
   }
 
   const industryCode =
-    INDUSTRY_CODES[industry];
+    INDUSTRY_CODES[
+      industry
+    ];
 
   if (!industryCode) {
     throw new Error(
@@ -759,7 +767,8 @@ async function generateNextContactId(
         params
     });
 
-  let maxSequence = 0;
+  let maxSequence =
+    0;
 
   for (
     const record of
@@ -816,7 +825,7 @@ async function generateNextContactId(
 }
 
 // ========================================
-// 判斷 Contact ID 重複錯誤
+// 判斷 Contact ID 是否為重複錯誤
 // ========================================
 
 function isDuplicateContactIdError(
@@ -859,8 +868,7 @@ function isDuplicateContactIdError(
 
 // ========================================
 // 建立聯絡人 1371
-//
-// company_id Lookup 1349
+// company_id → Lookup 1349
 // ========================================
 
 async function createContact(
@@ -869,14 +877,6 @@ async function createContact(
 ) {
   let lastError =
     null;
-
-  /*
-    若同時建立相同公司的聯絡人，
-    可能產生同一流水號。
-
-    contact_id 已設定禁止重複值，
-    所以最多重試 3 次。
-  */
 
   for (
     let attempt = 1;
@@ -892,11 +892,11 @@ async function createContact(
       await callKintone({
         /*
           CONTACT_TOKEN：
-          新增 1371。
+          新增 1371
 
           CUSTOMER_TOKEN：
-          讓 company_id Lookup
-          可以讀取 1349。
+          1371 company_id
+          Lookup 1349
         */
 
         token:
@@ -1003,14 +1003,6 @@ async function createContact(
         error.details || ""
       );
 
-      /*
-        只有重複 Contact ID
-        才重新產號並重試。
-
-        欄位、Lookup 或權限錯誤
-        不進行無效重試。
-      */
-
       if (
         !isDuplicateContactIdError(
           error
@@ -1032,8 +1024,8 @@ async function createContact(
 // ========================================
 // 建立拜訪紀錄 1350
 //
-// company_id Lookup 1349
-// contact_id Lookup 1371
+// company_id → Lookup 1349
+// contact_id → Lookup 1371
 // ========================================
 
 async function createVisit(
@@ -1042,13 +1034,6 @@ async function createVisit(
   visitData
 ) {
   const record = {
-    /*
-      從 1349 帶入：
-
-      company_name
-      company_phone
-    */
-
     company_id: {
       value:
         customer.company_id,
@@ -1056,16 +1041,6 @@ async function createVisit(
       lookup:
         true
     },
-
-    /*
-      從 1371 帶入：
-
-      contact_name
-      department
-      job_title
-      contact_email
-      contact_mobile
-    */
 
     contact_id: {
       value:
@@ -1096,10 +1071,6 @@ async function createVisit(
     }
   };
 
-  /*
-    選填欄位有值才寫入。
-  */
-
   if (
     visitData.next_followup_date
   ) {
@@ -1120,14 +1091,16 @@ async function createVisit(
 
   return await callKintone({
     /*
+      三個 Token：
+
       VISIT_TOKEN：
-      新增 1350。
+      新增 1350
 
       CUSTOMER_TOKEN：
-      company_id Lookup 讀取 1349。
+      company_id Lookup 1349
 
       CONTACT_TOKEN：
-      contact_id Lookup 讀取 1371。
+      contact_id Lookup 1371
     */
 
     token:
@@ -1331,7 +1304,7 @@ const server =
           );
 
         // ----------------------------------
-        // 顯示 WOFF 表單
+        // WOFF 表單
         // ----------------------------------
 
         if (
@@ -1366,7 +1339,7 @@ const server =
         }
 
         // ----------------------------------
-        // 健康檢查
+        // Health Check
         // ----------------------------------
 
         if (
@@ -1394,6 +1367,13 @@ const server =
                   VISIT_APP_ID
               },
 
+              lineworks: {
+                woffConfigured:
+                  Boolean(
+                    WOFF_ID
+                  )
+              },
+
               lookup: {
                 contactToCustomer:
                   true,
@@ -1417,13 +1397,47 @@ const server =
                 enabled:
                   true,
 
-                options: [
-                  "潛在客戶",
-                  "洽談中",
-                  "既有客戶",
-                  "停止追蹤"
-                ]
+                options:
+                  CUSTOMER_STATUSES
               }
+            }
+          );
+
+          return;
+        }
+
+        // ----------------------------------
+        // 前端設定
+        //
+        // GET /api/config
+        // ----------------------------------
+
+        if (
+          req.method === "GET" &&
+          requestUrl.pathname ===
+            "/api/config"
+        ) {
+          validateEnvironment();
+
+          /*
+            WOFF ID 不是 Secret，
+            可以提供給瀏覽器 woff.init()。
+
+            不可以在這裡回傳：
+            Client Secret
+            Private Key
+            Kintone Token
+          */
+
+          sendJson(
+            res,
+            200,
+            {
+              success:
+                true,
+
+              woffId:
+                WOFF_ID
             }
           );
 
@@ -1434,8 +1448,6 @@ const server =
         // 搜尋客戶
         //
         // GET /api/customers?keyword=TSMC
-        // GET /api/customers?keyword=FUJIFILM
-        // GET /api/customers?keyword=台積
         // ----------------------------------
 
         if (
@@ -1512,9 +1524,9 @@ const server =
         }
 
         // ----------------------------------
-        // 查詢公司旗下聯絡人
+        // 查詢公司聯絡人
         //
-        // GET /api/contacts?companyId=03550014
+        // GET /api/contacts?companyId=...
         // ----------------------------------
 
         if (
@@ -1657,7 +1669,7 @@ const server =
             );
 
           // --------------------------------
-          // 檢查客戶與聯絡人模式
+          // 驗證 Mode
           // --------------------------------
 
           if (
@@ -1707,7 +1719,7 @@ const server =
           }
 
           // --------------------------------
-          // 檢查拜訪必填欄位
+          // 拜訪必填
           // --------------------------------
 
           const missingVisitFields =
@@ -1838,16 +1850,8 @@ const server =
               return;
             }
 
-            const allowedCustomerStatuses =
-              [
-                "潛在客戶",
-                "洽談中",
-                "既有客戶",
-                "停止追蹤"
-              ];
-
             if (
-              !allowedCustomerStatuses.includes(
+              !CUSTOMER_STATUSES.includes(
                 customerData.customer_status
               )
             ) {
@@ -1897,9 +1901,9 @@ const server =
               true;
 
             /*
-              建立客戶後重新讀取，
-              確認 1349 Lookup Data Source
-              已經可以找到資料。
+              建完 1349 後重新查詢，
+              確保 1371 Lookup Source
+              已經存在。
             */
 
             customer =
@@ -2022,7 +2026,7 @@ const server =
           }
 
           // --------------------------------
-          // 建立 1350 拜訪紀錄
+          // 建立拜訪紀錄
           // --------------------------------
 
           const visitResult =
@@ -2059,6 +2063,10 @@ const server =
           return;
         }
 
+        // ----------------------------------
+        // 404
+        // ----------------------------------
+
         sendText(
           res,
           404,
@@ -2084,7 +2092,8 @@ const server =
               "系統發生錯誤",
 
             details:
-              error.details || null
+              error.details ||
+              null
           }
         );
       }
@@ -2116,6 +2125,10 @@ server.listen(
 
     console.log(
       `Visit App: ${VISIT_APP_ID}`
+    );
+
+    console.log(
+      `WOFF configured: ${Boolean(WOFF_ID)}`
     );
 
     console.log(
