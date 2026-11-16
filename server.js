@@ -11,7 +11,7 @@ const VISIT_APP_ID = process.env.KINTONE_VISIT_APP_ID || "1350";
 const VISIT_TOKEN = process.env.KINTONE_VISIT_API_TOKEN;
 const WOFF_ID = process.env.LINEWORKS_WOFF_ID;
 
-const AVAILABLE_MODES = ["visit", "customer", "contact"];
+const AVAILABLE_MODES = ["visit", "customer", "contact", "history"];
 const DEFAULT_MODE = "visit";
 const CUSTOMER_STATUSES = ["潛在客戶", "洽談中", "既有客戶", "停止追蹤"];
 const INDUSTRY_CODES = {
@@ -101,6 +101,27 @@ function formatCustomerRecord(record) {
     search_keywords: record.search_keywords?.value || "",
     customer_status: record.customer_status?.value || "",
     company_note: record.company_note?.value || ""
+  };
+}
+
+function formatVisitRecord(record) {
+  return {
+    recordId: record.$id?.value || "",
+    company_id: record.company_id?.value || "",
+    company_name: record.company_name?.value || "",
+    company_phone: record.company_phone?.value || "",
+    contact_id: record.contact_id?.value || "",
+    contact_name: record.contact_name?.value || "",
+    department: record.department?.value || "",
+    job_title: record.job_title?.value || "",
+    contact_email: record.contact_email?.value || "",
+    contact_mobile: record.contact_mobile?.value || "",
+    visit_date: record.visit_date?.value || "",
+    visit_type: record.visit_type?.value || "",
+    visit_content: record.visit_content?.value || "",
+    next_step: record.next_step?.value || "",
+    next_followup_date: record.next_followup_date?.value || "",
+    sales_stage: record.sales_stage?.value || ""
   };
 }
 
@@ -274,6 +295,21 @@ async function createContact(customer, contactData) {
   throw lastError || new Error("聯絡人建立失敗");
 }
 
+async function searchVisitsByCompanyId(companyId) {
+  const safe = escapeKintoneQueryValue(companyId);
+  const params = new URLSearchParams({
+    app: VISIT_APP_ID,
+    query: `company_id = "${safe}" order by visit_date desc, $id desc limit 100`
+  });
+  const data = await callKintone({
+    token: VISIT_TOKEN,
+    method: "GET",
+    apiPath: "/k/v1/records.json",
+    queryParams: params
+  });
+  return (data.records || []).map(formatVisitRecord);
+}
+
 async function createVisit(customer, contact, visitData) {
   const record = {
     company_id: { value: customer.company_id, lookup: true },
@@ -351,6 +387,11 @@ const server = http.createServer(async (req, res) => {
         contactSearch: {
           name: true, companyName: true, department: true,
           jobTitle: true, email: true, mobile: true
+        },
+        visitHistory: {
+          enabled: true,
+          maxResults: 100,
+          order: "visit_date desc"
         }
       });
       return;
@@ -403,6 +444,26 @@ const server = http.createServer(async (req, res) => {
       if (keyword.length < 2) return sendJson(res, 400, { success: false, message: "請至少輸入 2 個字" });
       const contacts = await searchContactsByKeyword(keyword);
       sendJson(res, 200, { success: true, keyword, found: contacts.length > 0, count: contacts.length, contacts });
+      return;
+    }
+
+    if (req.method === "GET" && requestUrl.pathname === "/api/visits") {
+      const companyId = normalizeText(requestUrl.searchParams.get("companyId"));
+      if (!companyId) {
+        return sendJson(res, 400, { success: false, message: "缺少統一編號" });
+      }
+      const customer = await findCustomerById(companyId);
+      if (!customer) {
+        return sendJson(res, 404, { success: false, message: "找不到客戶資料" });
+      }
+      const visits = await searchVisitsByCompanyId(companyId);
+      sendJson(res, 200, {
+        success: true,
+        customer,
+        found: visits.length > 0,
+        count: visits.length,
+        visits
+      });
       return;
     }
 
@@ -497,5 +558,6 @@ server.listen(port, () => {
   console.log(`WOFF configured: ${Boolean(WOFF_ID)}`);
   console.log(`Available modes: ${AVAILABLE_MODES.join(", ")}`);
   console.log("Contact search fields: contact_name, company_name, department, job_title, email, mobile");
+  console.log("Visit history endpoint: /api/visits?companyId=...");
   console.log("Lookup flow: 1349 -> 1371 -> 1350");
 });
