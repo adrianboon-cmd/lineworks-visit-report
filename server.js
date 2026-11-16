@@ -749,7 +749,7 @@ async function createContact(
 
     try {
       await callKintone({
-        token: CONTACT_TOKEN,
+        token: `${CONTACT_TOKEN},${CUSTOMER_TOKEN}`,
         method: "POST",
         apiPath:
           "/k/v1/record.json",
