@@ -30,14 +30,20 @@ const VISIT_APP_ID =
 const VISIT_TOKEN =
   process.env.KINTONE_VISIT_API_TOKEN;
 
-// LINE WORKS WOFF ID
-// 從 Render Environment 取得
 const WOFF_ID =
   process.env.LINEWORKS_WOFF_ID;
 
 // ========================================
-// 產業別代碼
+// 固定設定
 // ========================================
+
+const AVAILABLE_MODES = [
+  "visit",
+  "customer"
+];
+
+const DEFAULT_MODE =
+  "visit";
 
 const INDUSTRY_CODES = {
   製造業: "MFG",
@@ -53,10 +59,6 @@ const INDUSTRY_CODES = {
   資訊業: "IT"
 };
 
-// ========================================
-// 客戶狀態
-// ========================================
-
 const CUSTOMER_STATUSES = [
   "潛在客戶",
   "洽談中",
@@ -65,7 +67,7 @@ const CUSTOMER_STATUSES = [
 ];
 
 // ========================================
-// 共用回應函式
+// 共用回應
 // ========================================
 
 function sendJson(
@@ -73,13 +75,16 @@ function sendJson(
   statusCode,
   data
 ) {
-  res.writeHead(statusCode, {
-    "Content-Type":
-      "application/json; charset=utf-8",
+  res.writeHead(
+    statusCode,
+    {
+      "Content-Type":
+        "application/json; charset=utf-8",
 
-    "Cache-Control":
-      "no-store"
-  });
+      "Cache-Control":
+        "no-store"
+    }
+  );
 
   res.end(
     JSON.stringify(
@@ -95,19 +100,22 @@ function sendText(
   statusCode,
   text
 ) {
-  res.writeHead(statusCode, {
-    "Content-Type":
-      "text/plain; charset=utf-8",
+  res.writeHead(
+    statusCode,
+    {
+      "Content-Type":
+        "text/plain; charset=utf-8",
 
-    "Cache-Control":
-      "no-store"
-  });
+      "Cache-Control":
+        "no-store"
+    }
+  );
 
   res.end(text);
 }
 
 // ========================================
-// 讀取 Request Body
+// Request Body
 // ========================================
 
 function readBody(req) {
@@ -139,7 +147,7 @@ function readBody(req) {
 }
 
 // ========================================
-// Environment Variables 檢查
+// Environment 檢查
 // ========================================
 
 function validateEnvironment() {
@@ -182,8 +190,14 @@ function validateEnvironment() {
 }
 
 // ========================================
-// 組合 Kintone API Tokens
+// 共用工具
 // ========================================
+
+function normalizeText(value) {
+  return String(
+    value || ""
+  ).trim();
+}
 
 function combineTokens(
   ...tokens
@@ -193,8 +207,38 @@ function combineTokens(
     .join(",");
 }
 
+function escapeKintoneQueryValue(
+  value
+) {
+  return String(value)
+    .replace(
+      /\\/g,
+      "\\\\"
+    )
+    .replace(
+      /"/g,
+      '\\"'
+    );
+}
+
+function normalizeMode(mode) {
+  const value =
+    normalizeText(mode)
+      .toLowerCase();
+
+  if (
+    AVAILABLE_MODES.includes(
+      value
+    )
+  ) {
+    return value;
+  }
+
+  return DEFAULT_MODE;
+}
+
 // ========================================
-// Kintone 共用呼叫
+// Kintone API 共用呼叫
 // ========================================
 
 async function callKintone({
@@ -278,37 +322,7 @@ async function callKintone({
 }
 
 // ========================================
-// Kintone Query Escape
-// ========================================
-
-function escapeKintoneQueryValue(
-  value
-) {
-  return String(value)
-    .replace(
-      /\\/g,
-      "\\\\"
-    )
-    .replace(
-      /"/g,
-      '\\"'
-    );
-}
-
-// ========================================
-// 正規化文字
-// ========================================
-
-function normalizeText(
-  value
-) {
-  return String(
-    value || ""
-  ).trim();
-}
-
-// ========================================
-// 整理客戶資料
+// 資料格式化
 // ========================================
 
 function formatCustomerRecord(
@@ -352,10 +366,6 @@ function formatCustomerRecord(
       ""
   };
 }
-
-// ========================================
-// 整理聯絡人資料
-// ========================================
 
 function formatContactRecord(
   record
@@ -420,7 +430,7 @@ function formatContactRecord(
 }
 
 // ========================================
-// 公司名稱 / 搜尋關鍵字模糊搜尋
+// 客戶查詢
 // ========================================
 
 async function searchCustomers(
@@ -470,10 +480,6 @@ async function searchCustomers(
   );
 }
 
-// ========================================
-// 依統編查詢客戶
-// ========================================
-
 async function findCustomerById(
   companyId
 ) {
@@ -522,7 +528,7 @@ async function findCustomerById(
 }
 
 // ========================================
-// 建立客戶 1349
+// 建立客戶
 // ========================================
 
 async function createCustomer(
@@ -594,7 +600,7 @@ async function createCustomer(
 }
 
 // ========================================
-// 查詢公司旗下聯絡人
+// 聯絡人查詢
 // ========================================
 
 async function searchContactsByCompanyId(
@@ -639,10 +645,6 @@ async function searchContactsByCompanyId(
     formatContactRecord
   );
 }
-
-// ========================================
-// 依 Contact ID 查詢聯絡人
-// ========================================
 
 async function findContactById(
   contactId
@@ -692,7 +694,7 @@ async function findContactById(
 }
 
 // ========================================
-// 自動產生 Contact ID
+// Contact ID
 // ========================================
 
 async function generateNextContactId(
@@ -809,34 +811,26 @@ async function generateNextContactId(
     }
   }
 
-  const nextSequence =
+  return (
+    `${prefix}` +
     String(
       maxSequence + 1
     ).padStart(
       3,
       "0"
-    );
-
-  return (
-    `${industryCode}-` +
-    `${companyId}-` +
-    nextSequence
+    )
   );
 }
-
-// ========================================
-// 判斷 Contact ID 是否為重複錯誤
-// ========================================
 
 function isDuplicateContactIdError(
   error
 ) {
-  const detailsText =
+  const detail =
     JSON.stringify(
       error.details || {}
     ).toLowerCase();
 
-  const messageText =
+  const message =
     normalizeText(
       error.message
     ).toLowerCase();
@@ -844,22 +838,22 @@ function isDuplicateContactIdError(
   return (
     error.statusCode === 400 &&
     (
-      detailsText.includes(
+      detail.includes(
         "contact_id"
       ) ||
-      detailsText.includes(
+      detail.includes(
         "duplicate"
       ) ||
-      detailsText.includes(
+      detail.includes(
         "重複"
       ) ||
-      messageText.includes(
+      message.includes(
         "contact_id"
       ) ||
-      messageText.includes(
+      message.includes(
         "duplicate"
       ) ||
-      messageText.includes(
+      message.includes(
         "重複"
       )
     )
@@ -867,8 +861,7 @@ function isDuplicateContactIdError(
 }
 
 // ========================================
-// 建立聯絡人 1371
-// company_id → Lookup 1349
+// 建立聯絡人
 // ========================================
 
 async function createContact(
@@ -890,15 +883,6 @@ async function createContact(
 
     try {
       await callKintone({
-        /*
-          CONTACT_TOKEN：
-          新增 1371
-
-          CUSTOMER_TOKEN：
-          1371 company_id
-          Lookup 1349
-        */
-
         token:
           combineTokens(
             CONTACT_TOKEN,
@@ -1022,10 +1006,7 @@ async function createContact(
 }
 
 // ========================================
-// 建立拜訪紀錄 1350
-//
-// company_id → Lookup 1349
-// contact_id → Lookup 1371
+// 建立拜訪紀錄
 // ========================================
 
 async function createVisit(
@@ -1090,19 +1071,6 @@ async function createVisit(
   }
 
   return await callKintone({
-    /*
-      三個 Token：
-
-      VISIT_TOKEN：
-      新增 1350
-
-      CUSTOMER_TOKEN：
-      company_id Lookup 1349
-
-      CONTACT_TOKEN：
-      contact_id Lookup 1371
-    */
-
     token:
       combineTokens(
         VISIT_TOKEN,
@@ -1126,7 +1094,7 @@ async function createVisit(
 }
 
 // ========================================
-// 正規化客戶資料
+// Request Data 正規化
 // ========================================
 
 function normalizeCustomerData(
@@ -1180,10 +1148,6 @@ function normalizeCustomerData(
       )
   };
 }
-
-// ========================================
-// 正規化聯絡人資料
-// ========================================
 
 function normalizeContactData(
   value
@@ -1241,10 +1205,6 @@ function normalizeContactData(
       )
   };
 }
-
-// ========================================
-// 正規化拜訪資料
-// ========================================
 
 function normalizeVisitData(
   value
@@ -1304,7 +1264,10 @@ const server =
           );
 
         // ----------------------------------
-        // WOFF 表單
+        // 同一份 WOFF HTML
+        //
+        // /?mode=visit
+        // /?mode=customer
         // ----------------------------------
 
         if (
@@ -1339,7 +1302,7 @@ const server =
         }
 
         // ----------------------------------
-        // Health Check
+        // Health
         // ----------------------------------
 
         if (
@@ -1374,6 +1337,14 @@ const server =
                   )
               },
 
+              modes: {
+                default:
+                  DEFAULT_MODE,
+
+                available:
+                  AVAILABLE_MODES
+              },
+
               lookup: {
                 contactToCustomer:
                   true,
@@ -1391,14 +1362,6 @@ const server =
 
                 keywords:
                   true
-              },
-
-              customerStatus: {
-                enabled:
-                  true,
-
-                options:
-                  CUSTOMER_STATUSES
               }
             }
           );
@@ -1407,9 +1370,9 @@ const server =
         }
 
         // ----------------------------------
-        // 前端設定
+        // WOFF 前端設定
         //
-        // GET /api/config
+        // GET /api/config?mode=customer
         // ----------------------------------
 
         if (
@@ -1419,15 +1382,10 @@ const server =
         ) {
           validateEnvironment();
 
-          /*
-            WOFF ID 不是 Secret，
-            可以提供給瀏覽器 woff.init()。
-
-            不可以在這裡回傳：
-            Client Secret
-            Private Key
-            Kintone Token
-          */
+          const requestedMode =
+            requestUrl
+              .searchParams
+              .get("mode");
 
           sendJson(
             res,
@@ -1437,7 +1395,18 @@ const server =
                 true,
 
               woffId:
-                WOFF_ID
+                WOFF_ID,
+
+              mode:
+                normalizeMode(
+                  requestedMode
+                ),
+
+              defaultMode:
+                DEFAULT_MODE,
+
+              availableModes:
+                AVAILABLE_MODES
             }
           );
 
@@ -1446,8 +1415,6 @@ const server =
 
         // ----------------------------------
         // 搜尋客戶
-        //
-        // GET /api/customers?keyword=TSMC
         // ----------------------------------
 
         if (
@@ -1524,9 +1491,89 @@ const server =
         }
 
         // ----------------------------------
-        // 查詢公司聯絡人
+        // 單一客戶完整資料
         //
-        // GET /api/contacts?companyId=...
+        // 給 mode=customer 使用
+        //
+        // GET /api/customer-detail
+        // ?companyId=03550014
+        // ----------------------------------
+
+        if (
+          req.method === "GET" &&
+          requestUrl.pathname ===
+            "/api/customer-detail"
+        ) {
+          const companyId =
+            normalizeText(
+              requestUrl
+                .searchParams
+                .get("companyId")
+            );
+
+          if (!companyId) {
+            sendJson(
+              res,
+              400,
+              {
+                success:
+                  false,
+
+                message:
+                  "缺少統一編號"
+              }
+            );
+
+            return;
+          }
+
+          const customer =
+            await findCustomerById(
+              companyId
+            );
+
+          if (!customer) {
+            sendJson(
+              res,
+              404,
+              {
+                success:
+                  false,
+
+                message:
+                  "找不到客戶資料"
+              }
+            );
+
+            return;
+          }
+
+          const contacts =
+            await searchContactsByCompanyId(
+              companyId
+            );
+
+          sendJson(
+            res,
+            200,
+            {
+              success:
+                true,
+
+              customer,
+
+              contactCount:
+                contacts.length,
+
+              contacts
+            }
+          );
+
+          return;
+        }
+
+        // ----------------------------------
+        // 指定公司的聯絡人
         // ----------------------------------
 
         if (
@@ -1607,8 +1654,6 @@ const server =
 
         // ----------------------------------
         // 建立拜訪紀錄
-        //
-        // POST /api/visit
         // ----------------------------------
 
         if (
@@ -1668,10 +1713,6 @@ const server =
               requestData.visit
             );
 
-          // --------------------------------
-          // 驗證 Mode
-          // --------------------------------
-
           if (
             ![
               "existing",
@@ -1718,10 +1759,6 @@ const server =
             return;
           }
 
-          // --------------------------------
-          // 拜訪必填
-          // --------------------------------
-
           const missingVisitFields =
             [
               "visit_date",
@@ -1760,9 +1797,7 @@ const server =
           let customerCreated =
             false;
 
-          // --------------------------------
           // 既有客戶
-          // --------------------------------
 
           if (
             customerMode ===
@@ -1808,9 +1843,7 @@ const server =
             }
           }
 
-          // --------------------------------
           // 新客戶
-          // --------------------------------
 
           if (
             customerMode ===
@@ -1900,12 +1933,6 @@ const server =
             customerCreated =
               true;
 
-            /*
-              建完 1349 後重新查詢，
-              確保 1371 Lookup Source
-              已經存在。
-            */
-
             customer =
               await findCustomerById(
                 customerData.company_id
@@ -1922,9 +1949,7 @@ const server =
           let contactCreated =
             false;
 
-          // --------------------------------
           // 既有聯絡人
-          // --------------------------------
 
           if (
             contactMode ===
@@ -1989,13 +2014,10 @@ const server =
             }
           }
 
-          // --------------------------------
           // 新聯絡人
-          // --------------------------------
 
           if (
-            contactMode ===
-            "new"
+            contactMode === "new"
           ) {
             if (
               !contactData.contact_name
@@ -2024,10 +2046,6 @@ const server =
             contactCreated =
               true;
           }
-
-          // --------------------------------
-          // 建立拜訪紀錄
-          // --------------------------------
 
           const visitResult =
             await createVisit(
@@ -2062,10 +2080,6 @@ const server =
 
           return;
         }
-
-        // ----------------------------------
-        // 404
-        // ----------------------------------
 
         sendText(
           res,
@@ -2132,11 +2146,11 @@ server.listen(
     );
 
     console.log(
-      "Customer search fields: company_name, search_keywords"
+      `Available modes: ${AVAILABLE_MODES.join(", ")}`
     );
 
     console.log(
-      "Customer status field: customer_status"
+      "Customer search fields: company_name, search_keywords"
     );
 
     console.log(
