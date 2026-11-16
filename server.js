@@ -892,64 +892,67 @@ async function createVisit(
   visitData
 ) {
   const record = {
-    // ------------------------------------
-    // 客戶資料快照
-    // ------------------------------------
 
     company_id: {
-      value:
-        customer.company_id
+      value: customer.company_id,
+      lookup: true
     },
-
-    company_name: {
-      value:
-        customer.company_name
-    },
-
-    company_phone: {
-      value:
-        customer.company_phone ||
-        ""
-    },
-
-    // ------------------------------------
-    // 聯絡人資料快照
-    // ------------------------------------
 
     contact_id: {
-      value:
-        contact.contact_id
+      value: contact.contact_id,
+      lookup: true
     },
 
-    contact_name: {
-      value:
-        contact.contact_name
+    visit_date: {
+      value: visitData.visit_date
     },
 
-    department: {
-      value:
-        contact.department ||
-        ""
+    visit_type: {
+      value: visitData.visit_type
     },
 
-    job_title: {
-      value:
-        contact.job_title ||
-        ""
+    visit_content: {
+      value: visitData.visit_content
     },
 
-    contact_email: {
-      value:
-        contact.email ||
-        ""
-    },
+    next_step: {
+      value: visitData.next_step
+    }
+  };
 
-    contact_mobile: {
+  if (
+    visitData.next_followup_date
+  ) {
+    record.next_followup_date = {
       value:
-        contact.mobile ||
-        ""
-    },
+        visitData.next_followup_date
+    };
+  }
 
+  if (
+    visitData.sales_stage
+  ) {
+    record.sales_stage = {
+      value:
+        visitData.sales_stage
+    };
+  }
+
+  return await callKintone({
+    token:
+      `${VISIT_TOKEN},${CUSTOMER_TOKEN},${CONTACT_TOKEN}`,
+
+    method: "POST",
+
+    apiPath:
+      "/k/v1/record.json",
+
+    body: {
+      app: VISIT_APP_ID,
+      record
+    }
+  });
+}
     // ------------------------------------
     // 拜訪資料
     // ------------------------------------
