@@ -12,6 +12,9 @@ const CONTACT_TOKEN = process.env.KINTONE_CONTACT_API_TOKEN;
 const VISIT_APP_ID = process.env.KINTONE_VISIT_APP_ID || "1350";
 const VISIT_TOKEN = process.env.KINTONE_VISIT_API_TOKEN;
 const WOFF_ID = process.env.LINEWORKS_WOFF_ID;
+const LINEWORKS_WOFF_URL =
+  process.env.LINEWORKS_WOFF_URL ||
+  "https://woff.worksmobile.com/woff/dFobmZpVEKmp7ywVb5oFOw";
 const LINEWORKS_BOT_ID = process.env.LINEWORKS_BOT_ID;
 const LINEWORKS_CLIENT_ID = process.env.LINEWORKS_CLIENT_ID;
 const LINEWORKS_CLIENT_SECRET = process.env.LINEWORKS_CLIENT_SECRET;
@@ -90,8 +93,31 @@ function validateRich(){const x={LINEWORKS_BOT_ID,LINEWORKS_CLIENT_ID,LINEWORKS_
 async function lwToken(){validateRich();const now=Math.floor(Date.now()/1000),assertion=jwt.sign({iss:LINEWORKS_CLIENT_ID,sub:LINEWORKS_SERVICE_ACCOUNT,iat:now,exp:now+3600},privateKey(),{algorithm:"RS256"}),f=new URLSearchParams({grant_type:"urn:ietf:params:oauth:grant-type:jwt-bearer",client_id:LINEWORKS_CLIENT_ID,client_secret:LINEWORKS_CLIENT_SECRET,assertion,scope:"bot,bot.message"});const d=await parse(await fetch(LW_TOKEN,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:f}),"LINE WORKS Token 失敗");return d.access_token;}
 async function lw(token,method,payloadPath,payload){return parse(await fetch(`${LW_API}${payloadPath}`,{method,headers:{Authorization:`Bearer ${token}`,...(payload?{"Content-Type":"application/json"}:{})},...(payload?{body:JSON.stringify(payload)}:{})}),"LINE WORKS API 失敗");}
 async function uploadMenuImage(token,filePath){const fileName=path.basename(filePath),a=await lw(token,"POST",`/bots/${LINEWORKS_BOT_ID}/attachments`,{fileName}),f=new FormData(),buf=fs.readFileSync(filePath);f.append("resourceName",fileName);f.append("Filedata",new Blob([buf],{type:"image/png"}),fileName);await parse(await fetch(a.uploadUrl,{method:"POST",headers:{Authorization:`Bearer ${token}`},body:f}),"Rich Menu 圖片上傳失敗");return a.fileId;}
-function menuAreas(base){const b=base.replace(/\/$/,"");return[[0,0,"拜訪紀錄回報","visit"],[1250,0,"客戶查詢","customer"],[0,843,"聯絡人查詢","contact"],[1250,843,"拜訪紀錄","history"]].map(([x,y,label,m])=>({bounds:{x,y,width:1250,height:843},action:{type:"uri",label,uri:`${b}/?mode=${m}`}}));}
-async function setupMenu(base){const token=await lwToken(),dir=path.join(__dirname,"richmenu"),zh=await uploadMenuImage(token,path.join(dir,"richmenu-zh.png")),en=await uploadMenuImage(token,path.join(dir,"richmenu-en.png")),jp=await uploadMenuImage(token,path.join(dir,"richmenu-jp.png")),m=await lw(token,"POST",`/bots/${LINEWORKS_BOT_ID}/richmenus`,{richmenuName:`CRM ${new Date().toISOString()}`,size:{width:2500,height:1686},areas:menuAreas(base)});await lw(token,"POST",`/bots/${LINEWORKS_BOT_ID}/richmenus/${m.richmenuId}/image`,{fileId:zh,i18nFileIds:[{language:"zh_TW",fileId:zh},{language:"en_US",fileId:en},{language:"ja_JP",fileId:jp}]});await lw(token,"POST",`/bots/${LINEWORKS_BOT_ID}/richmenus/${m.richmenuId}/set-default`);return m.richmenuId;}
+function menuAreas() {
+  const woffUrl =
+    LINEWORKS_WOFF_URL.replace(/\/$/, "");
+
+  return [
+    [0, 0, "拜訪紀錄回報", "visit"],
+    [1250, 0, "客戶查詢", "customer"],
+    [0, 843, "聯絡人查詢", "contact"],
+    [1250, 843, "拜訪紀錄", "history"]
+  ].map(([x, y, label, mode]) => ({
+    bounds: {
+      x,
+      y,
+      width: 1250,
+      height: 843
+    },
+    action: {
+      type: "uri",
+      label,
+      uri:
+        `${woffUrl}?mode=${mode}`
+    }
+  }));
+}
+async function setupMenu(base){const token=await lwToken(),dir=path.join(__dirname,"richmenu"),zh=await uploadMenuImage(token,path.join(dir,"richmenu-zh.png")),en=await uploadMenuImage(token,path.join(dir,"richmenu-en.png")),jp=await uploadMenuImage(token,path.join(dir,"richmenu-jp.png")),m=await lw(token,"POST",`/bots/${LINEWORKS_BOT_ID}/richmenus`,{richmenuName:`CRM ${new Date().toISOString()}`,size:{width:2500,height:1686},areas:menuAreas()});await lw(token,"POST",`/bots/${LINEWORKS_BOT_ID}/richmenus/${m.richmenuId}/image`,{fileId:zh,i18nFileIds:[{language:"zh_TW",fileId:zh},{language:"en_US",fileId:en},{language:"ja_JP",fileId:jp}]});await lw(token,"POST",`/bots/${LINEWORKS_BOT_ID}/richmenus/${m.richmenuId}/set-default`);return m.richmenuId;}
 
 const server=http.createServer(async(req,res)=>{try{const u=new URL(req.url,`http://${req.headers.host||"localhost"}`);
 if(req.method==="GET"&&u.pathname==="/"){const h=fs.readFileSync(path.join(__dirname,"visit-form.html"),"utf8");res.writeHead(200,{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"});return res.end(h);}
