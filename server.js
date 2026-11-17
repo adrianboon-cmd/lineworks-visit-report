@@ -11,6 +11,8 @@ const CONTACT_APP_ID = process.env.KINTONE_CONTACT_APP_ID || "1371";
 const CONTACT_TOKEN = process.env.KINTONE_CONTACT_API_TOKEN;
 const VISIT_APP_ID = process.env.KINTONE_VISIT_APP_ID || "1350";
 const VISIT_TOKEN = process.env.KINTONE_VISIT_API_TOKEN;
+const USERMAP_APP_ID = process.env.KINTONE_USERMAP_APP || "1372";
+const USERMAP_TOKEN = process.env.KINTONE_USERMAP_TOKEN;
 const WOFF_ID = process.env.LINEWORKS_WOFF_ID;
 const LINEWORKS_WOFF_URL =
   process.env.LINEWORKS_WOFF_URL ||
@@ -35,7 +37,7 @@ function norm(v){return String(v||"").trim();}
 function esc(v){return String(v).replace(/\\/g,"\\\\").replace(/"/g,'\\"');}
 function tokens(...v){return v.filter(Boolean).join(",");}
 function body(req){return new Promise((resolve,reject)=>{let s="";req.on("data",c=>s+=c);req.on("end",()=>resolve(s));req.on("error",reject);});}
-function validate(){const x={KINTONE_DOMAIN:DOMAIN,KINTONE_CUSTOMER_API_TOKEN:CUSTOMER_TOKEN,KINTONE_CONTACT_API_TOKEN:CONTACT_TOKEN,KINTONE_VISIT_API_TOKEN:VISIT_TOKEN,LINEWORKS_WOFF_ID:WOFF_ID};const m=Object.entries(x).filter(([,v])=>!v).map(([k])=>k);if(m.length)throw new Error(`缺少 Environment Variable：${m.join("、")}`);}
+function validate(){const x={KINTONE_DOMAIN:DOMAIN,KINTONE_CUSTOMER_API_TOKEN:CUSTOMER_TOKEN,KINTONE_CONTACT_API_TOKEN:CONTACT_TOKEN,KINTONE_VISIT_API_TOKEN:VISIT_TOKEN,LINEWORKS_WOFF_ID:WOFF_ID,KINTONE_USERMAP_TOKEN:USERMAP_TOKEN};const m=Object.entries(x).filter(([,v])=>!v).map(([k])=>k);if(m.length)throw new Error(`缺少 Environment Variable：${m.join("、")}`);}
 
 async function parse(r,msg){const t=await r.text();let d={};try{d=t?JSON.parse(t):{};}catch{d={message:t||msg};}if(!r.ok){const e=new Error(d.error_description||d.message||d.code||msg);e.statusCode=r.status;e.details=d;throw e;}return d;}
 async function kapi({token,method,apiPath,queryParams,body:payload}){validate();let u=`${DOMAIN}${apiPath}`;if(queryParams)u+=`?${queryParams.toString()}`;const o={method,headers:{"X-Cybozu-API-Token":token}};if(payload){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(payload);}return parse(await fetch(u,o),"Kintone API 執行失敗");}
@@ -71,12 +73,36 @@ async function verifyLineWorksIdToken(idToken){
   return{userId:claims.sub,email:String(claims.email).toLowerCase(),name:claims.name||claims.email,locale:claims.locale||""};
 }
 
-async function getAllKintoneUsers(){
-  const all=[];let offset=0;const size=100;
-  while(true){const p=new URLSearchParams({offset:String(offset),size:String(size)});const d=await kapi({token:CUSTOMER_TOKEN,method:"GET",apiPath:"/v1/users.json",queryParams:p});const users=d.users||[];all.push(...users);if(users.length<size)break;offset+=size;if(offset>10000)throw new Error("Kintone User 數量異常");}
-  return all;
+async function mapKintoneUserByEmail(email){
+  const normalizedEmail=String(email||"").trim().toLowerCase();
+  if(!normalizedEmail)throw new Error("LINE WORKS 沒有取得 Email");
+  const p=new URLSearchParams({app:USERMAP_APP_ID,query:`email = "${esc(normalizedEmail)}" limit 2`});
+  const d=await kapi({token:USERMAP_TOKEN,method:"GET",apiPath:"/k/v1/records.json",queryParams:p});
+  const records=d.records||[];
+  if(records.length===0)throw new Error(`App ${USERMAP_APP_ID} 找不到 Email 對照：${normalizedEmail}`);
+  if(records.length>1)throw new Error(`App ${USERMAP_APP_ID} 有多筆相同 Email：${normalizedEmail}`);
+  const users=records[0].kintone_user?.value||[];
+  if(users.length===0)throw new Error(`App ${USERMAP_APP_ID} 的 kintone_user 尚未設定：${normalizedEmail}`);
+  if(users.length>1)throw new Error(`App ${USERMAP_APP_ID} 的 kintone_user 只能設定一位使用者：${normalizedEmail}`);
+  return{code:users[0].code,name:users[0].name||users[0].code,email:normalizedEmail};
 }
-async function mapKintoneUserByEmail(email){const users=await getAllKintoneUsers();const e=String(email).toLowerCase();const matches=users.filter(u=>String(u.email||"").toLowerCase()===e);if(matches.length===0)throw new Error(`Kintone 找不到相同 Email 的使用者：${email}`);if(matches.length>1)throw new Error(`Kintone 有多個相同 Email 使用者：${email}`);const u=matches[0];return{code:u.code,name:u.name,email:u.email,id:u.id};}
+function validateDirectory(){
+  const x={LINEWORKS_CLIENT_ID,LINEWORKS_CLIENT_SECRET,LINEWORKS_SERVICE_ACCOUNT,LINEWORKS_PRIVATE_KEY};
+  const m=Object.entries(x).filter(([,v])=>!v).map(([k])=>k);
+  if(m.length)throw new Error(`LINE WORKS Directory 診斷缺少：${m.join("、")}`);
+}
+async function lwDirectoryToken(){
+  validateDirectory();
+  const now=Math.floor(Date.now()/1000);
+  const assertion=jwt.sign({iss:LINEWORKS_CLIENT_ID,sub:LINEWORKS_SERVICE_ACCOUNT,iat:now,exp:now+3600},privateKey(),{algorithm:"RS256"});
+  const f=new URLSearchParams({grant_type:"urn:ietf:params:oauth:grant-type:jwt-bearer",client_id:LINEWORKS_CLIENT_ID,client_secret:LINEWORKS_CLIENT_SECRET,assertion,scope:"user.profile.read"});
+  const d=await parse(await fetch(LW_TOKEN,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:f}),"LINE WORKS Directory Token 失敗。請確認 Developer Console 已加入 user.profile.read scope");
+  return d.access_token;
+}
+async function getLineWorksProfile(identifier){
+  const token=await lwDirectoryToken();
+  return lw(token,"GET",`/users/${encodeURIComponent(identifier)}`);
+}
 async function verifiedIdentityFromRequest(req){const h=norm(req.headers.authorization);if(!h.startsWith("Bearer "))throw new Error("尚未完成 LINE WORKS 身分驗證");const lineworks=await verifyLineWorksIdToken(h.slice(7));const kintone=await mapKintoneUserByEmail(lineworks.email);return{lineworks,kintone};}
 
 async function createCustomer(d,identity){return kapi({token:CUSTOMER_TOKEN,method:"POST",apiPath:"/k/v1/record.json",body:{app:CUSTOMER_APP_ID,record:{company_id:{value:d.company_id},company_name:{value:d.company_name},company_phone:{value:d.company_phone||""},company_address:{value:d.company_address||""},industry:{value:d.industry},search_keywords:{value:d.search_keywords||""},customer_status:{value:d.customer_status},company_note:{value:d.company_note||""},created_by_user:{value:[{code:identity.kintone.code}]}}}});}
@@ -123,6 +149,21 @@ const server=http.createServer(async(req,res)=>{try{const u=new URL(req.url,`htt
 if(req.method==="GET"&&u.pathname==="/"){const h=fs.readFileSync(path.join(__dirname,"visit-form.html"),"utf8");res.writeHead(200,{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"});return res.end(h);}
 if(req.method==="GET"&&u.pathname==="/health")return json(res,200,{status:"ok",apps:{customer:CUSTOMER_APP_ID,contact:CONTACT_APP_ID,visit:VISIT_APP_ID},modes:{available:AVAILABLE_MODES},identity:{tenantConfigured:Boolean(LINEWORKS_TENANT_ID),clientConfigured:Boolean(LINEWORKS_CLIENT_ID),fields:{customer:"created_by_user",contact:"created_by_user",visit:"reporter"}}});
 if(req.method==="GET"&&u.pathname==="/api/config")return json(res,200,{success:true,woffId:WOFF_ID,mode:AVAILABLE_MODES.includes(norm(u.searchParams.get("mode")))?norm(u.searchParams.get("mode")):"visit",availableModes:AVAILABLE_MODES});
+if(req.method==="POST"&&u.pathname==="/api/diagnostic/lineworks-profile"){
+  const h=norm(req.headers.authorization);
+  if(!h.startsWith("Bearer "))throw new Error("診斷 API 缺少 LINE WORKS ID Token");
+  const claims=await verifyLineWorksIdToken(h.slice(7));
+  let profile;
+  let matchedBy="sub";
+  try{profile=await getLineWorksProfile(claims.userId);}catch(firstError){
+    matchedBy="loginId";
+    try{profile=await getLineWorksProfile(claims.email);}catch(secondError){
+      secondError.details={firstAttempt:{identifier:claims.userId,message:firstError.message,details:firstError.details||null},secondAttempt:{identifier:claims.email,message:secondError.message,details:secondError.details||null}};
+      throw secondError;
+    }
+  }
+  return json(res,200,{success:true,matchedBy,tokenClaims:claims,profile});
+}
 if(req.method==="POST"&&u.pathname==="/api/auth/verify"){const identity=await verifiedIdentityFromRequest(req);return json(res,200,{success:true,verified:true,user:{lineworksUserId:identity.lineworks.userId,email:identity.lineworks.email,name:identity.lineworks.name,locale:identity.lineworks.locale,kintoneUserCode:identity.kintone.code,kintoneUserName:identity.kintone.name}});}
 if(req.method==="POST"&&u.pathname==="/admin/richmenu/setup"){validateRich();if(req.headers["x-richmenu-setup-key"]!==RICHMENU_SETUP_KEY)return json(res,401,{success:false,message:"Setup Key 不正確"});const base=process.env.RENDER_EXTERNAL_URL||`https://${req.headers.host}`;const id=await setupMenu(base);return json(res,200,{success:true,richmenuId:id});}
 if(req.method==="GET"&&u.pathname==="/api/customers"){const q=norm(u.searchParams.get("keyword"));if(q.length<2)return json(res,400,{success:false,message:"請至少輸入 2 個字"});const a=await searchCustomers(q);return json(res,200,{success:true,found:!!a.length,count:a.length,customers:a});}
