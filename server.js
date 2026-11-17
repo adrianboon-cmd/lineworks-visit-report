@@ -149,20 +149,17 @@ const server=http.createServer(async(req,res)=>{try{const u=new URL(req.url,`htt
 if(req.method==="GET"&&u.pathname==="/"){const h=fs.readFileSync(path.join(__dirname,"visit-form.html"),"utf8");res.writeHead(200,{"Content-Type":"text/html; charset=utf-8","Cache-Control":"no-store"});return res.end(h);}
 if(req.method==="GET"&&u.pathname==="/health")return json(res,200,{status:"ok",apps:{customer:CUSTOMER_APP_ID,contact:CONTACT_APP_ID,visit:VISIT_APP_ID},modes:{available:AVAILABLE_MODES},identity:{tenantConfigured:Boolean(LINEWORKS_TENANT_ID),clientConfigured:Boolean(LINEWORKS_CLIENT_ID),fields:{customer:"created_by_user",contact:"created_by_user",visit:"reporter"}}});
 if(req.method==="GET"&&u.pathname==="/api/config")return json(res,200,{success:true,woffId:WOFF_ID,mode:AVAILABLE_MODES.includes(norm(u.searchParams.get("mode")))?norm(u.searchParams.get("mode")):"visit",availableModes:AVAILABLE_MODES});
-if(req.method==="POST"&&u.pathname==="/api/diagnostic/lineworks-profile"){
-  const h=norm(req.headers.authorization);
-  if(!h.startsWith("Bearer "))throw new Error("診斷 API 缺少 LINE WORKS ID Token");
-  const claims=await verifyLineWorksIdToken(h.slice(7));
-  let profile;
-  let matchedBy="sub";
-  try{profile=await getLineWorksProfile(claims.userId);}catch(firstError){
-    matchedBy="loginId";
-    try{profile=await getLineWorksProfile(claims.email);}catch(secondError){
-      secondError.details={firstAttempt:{identifier:claims.userId,message:firstError.message,details:firstError.details||null},secondAttempt:{identifier:claims.email,message:secondError.message,details:secondError.details||null}};
-      throw secondError;
-    }
-  }
-  return json(res,200,{success:true,matchedBy,tokenClaims:claims,profile});
+if(req.method==="GET"&&u.pathname==="/api/diagnostic/lineworks-profile"){
+  const expectedKey=norm(process.env.DIAGNOSTIC_API_KEY);
+  const suppliedKey=norm(req.headers["x-diagnostic-key"]||u.searchParams.get("key"));
+  if(!expectedKey)throw new Error("缺少 Environment Variable：DIAGNOSTIC_API_KEY");
+  if(suppliedKey!==expectedKey)return json(res,401,{success:false,message:"Diagnostic Key 不正確"});
+
+  const userId=norm(u.searchParams.get("userId"));
+  if(!userId)return json(res,400,{success:false,message:"缺少 userId"});
+
+  const profile=await getLineWorksProfile(userId);
+  return json(res,200,{success:true,queriedUserId:userId,profile});
 }
 if(req.method==="POST"&&u.pathname==="/api/auth/verify"){const identity=await verifiedIdentityFromRequest(req);return json(res,200,{success:true,verified:true,user:{lineworksUserId:identity.lineworks.userId,email:identity.lineworks.email,name:identity.lineworks.name,locale:identity.lineworks.locale,kintoneUserCode:identity.kintone.code,kintoneUserName:identity.kintone.name}});}
 if(req.method==="POST"&&u.pathname==="/admin/richmenu/setup"){validateRich();if(req.headers["x-richmenu-setup-key"]!==RICHMENU_SETUP_KEY)return json(res,401,{success:false,message:"Setup Key 不正確"});const base=process.env.RENDER_EXTERNAL_URL||`https://${req.headers.host}`;const id=await setupMenu(base);return json(res,200,{success:true,richmenuId:id});}
